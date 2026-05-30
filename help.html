@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de uso · AI Mastering Engine</title>
+<style>
+:root {
+  --bg:#07070f; --card:#0d0d1e; --card2:#111128; --border:#222240; --text:#e8eaf8;
+  --muted:#8888c0; --dim:#404070;
+  --blue:#4dabf7; --purple:#cc5de8; --green:#69db7c;
+  --orange:#ffa94d; --yellow:#ffd43b; --red:#ff6b6b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.7}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);padding:28px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.content{flex:1;padding:48px 56px 80px;max-width:820px}
+
+/* Sidebar */
+.sidebar-title{font-size:11px;font-weight:bold;letter-spacing:3px;color:var(--muted);padding:0 24px;margin-bottom:20px}
+.sidebar-back{display:flex;align-items:center;gap:8px;padding:10px 24px;color:var(--blue);font-size:13px;text-decoration:none;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:16px}
+.sidebar-back:hover{color:#fff}
+.nav-section{padding:6px 24px 2px;font-size:10px;letter-spacing:2px;color:var(--dim);font-weight:bold;margin-top:12px}
+.nav-link{display:block;padding:7px 24px;font-size:13px;color:var(--muted);text-decoration:none;border-left:3px solid transparent;transition:all .15s}
+.nav-link:hover,.nav-link.active{color:var(--text);border-left-color:var(--blue);background:rgba(77,171,247,.06)}
+.nav-link.mod{padding-left:36px;font-size:12px}
+.mod-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle}
+
+/* Content */
+h1{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:48px}
+h2{font-size:20px;font-weight:800;color:var(--text);margin:52px 0 16px;padding-top:16px;border-top:1px solid var(--border)}
+h2:first-of-type{margin-top:0;border-top:none;padding-top:0}
+h3{font-size:15px;font-weight:700;color:var(--blue);margin:28px 0 10px;letter-spacing:.3px}
+p{margin-bottom:14px;color:#ccd0f0}
+p:last-child{margin-bottom:0}
+strong{color:var(--text)}
+em{color:var(--orange);font-style:normal}
+
+/* Module header */
+.mod-header{display:flex;align-items:center;gap:12px;margin:40px 0 16px;padding:14px 18px;background:var(--card2);border-radius:10px;border-left:4px solid var(--mc)}
+.mod-number{font-size:11px;font-weight:bold;letter-spacing:2px;color:var(--muted)}
+.mod-title{font-size:18px;font-weight:800;color:var(--mc)}
+.mod-subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Slider table */
+.slider-table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px}
+.slider-table th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:bold}
+.slider-table td{padding:10px 12px;border-bottom:1px solid #16163a;vertical-align:top;line-height:1.5}
+.slider-table tr:last-child td{border-bottom:none}
+.slider-table tr:hover td{background:rgba(255,255,255,.02)}
+.slider-name{font-weight:bold;color:var(--text);white-space:nowrap}
+.slider-range{font-family:monospace;font-size:12px;color:var(--blue);white-space:nowrap}
+.up{color:var(--green);font-weight:bold}
+.down{color:var(--red);font-weight:bold}
+.neutral{color:var(--muted);font-weight:bold}
+.dir{font-size:16px;vertical-align:middle}
+
+/* Tip box */
+.tip{background:#07071a;border-left:3px solid var(--mc,var(--blue));padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#90c8ff;margin:16px 0;line-height:1.7}
+.tip strong{color:var(--blue)}
+.warn{border-left-color:var(--orange);color:#ffc080}
+.warn strong{color:var(--orange)}
+.good{border-left-color:var(--green);color:#90e8a0}
+.good strong{color:var(--green)}
+
+/* Workflow steps */
+.steps{counter-reset:steps;margin:20px 0}
+.step{counter-increment:steps;display:flex;gap:16px;margin-bottom:20px;padding:16px 18px;background:var(--card2);border-radius:10px;border:1px solid var(--border)}
+.step::before{content:counter(steps);display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-size:13px;font-weight:bold;flex-shrink:0;margin-top:2px}
+.step-content h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:5px}
+.step-content p{font-size:13px;color:var(--muted);margin:0}
+
+/* Rules */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.rule{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.rule-title{font-size:13px;font-weight:bold;color:var(--text);margin-bottom:5px}
+.rule-text{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Chain diagram */
+.chain{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:16px 18px;background:var(--card2);border-radius:10px;margin:16px 0;border:1px solid var(--border)}
+.chain-node{font-size:11px;font-weight:bold;letter-spacing:1px;padding:4px 10px;border-radius:4px;border:1px solid}
+.chain-arrow{color:var(--dim);font-size:14px}
+.chain-label{font-size:10px;color:var(--muted);letter-spacing:1px}
+
+/* Spectrum explanation */
+.spectrum-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.legend-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px}
+.legend-icon{font-size:20px;margin-bottom:6px}
+.legend-title{font-weight:bold;color:var(--text);margin-bottom:4px;font-size:13px}
+.legend-desc{color:var(--muted);line-height:1.5}
+
+/* LUFS comparison */
+.lufs-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+.lufs-table th{background:var(--card2);padding:8px 14px;text-align:left;font-size:11px;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border)}
+.lufs-table td{padding:9px 14px;border-bottom:1px solid #16163a;color:#ccd0f0}
+.lufs-table tr:last-child td{border-bottom:none}
+
+@media(max-width:768px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border)}
+  .content{padding:28px 20px 60px}
+  .rules{grid-template-columns:1fr}
+  .spectrum-legend{grid-template-columns:1fr}
+}
+
+/* Print button */
+.btn-print{display:flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--dim);color:var(--muted);cursor:pointer;font-size:12px;font-weight:bold;letter-spacing:.5px;padding:8px 14px;border-radius:7px;transition:all .15s;width:calc(100% - 48px);margin:12px 24px 0;justify-content:center}
+.btn-print:hover{color:var(--blue);border-color:var(--blue);background:rgba(77,171,247,.08)}
+.btn-print svg{flex-shrink:0}
+
+/* ══════════════════════════════════════
+   PRINT STYLES
+══════════════════════════════════════ */
+@media print {
+  /* Reset */
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}
+  :root{
+    --bg:#ffffff; --card:#f5f5f8; --card2:#eeeeF4; --border:#d0d0e0; --text:#1a1a2e;
+    --muted:#555570; --dim:#888899;
+    --blue:#1a5fa8; --purple:#7030a0; --green:#1a6e35;
+    --orange:#b05010; --yellow:#806000; --red:#b01010;
+  }
+
+  body{background:#fff;color:#1a1a2e;font-family:'Georgia',serif;font-size:11pt;line-height:1.65}
+
+  /* Layout: ocultar sidebar, mostrar solo contenido */
+  .sidebar,.btn-print,.sidebar-back{display:none !important}
+  .layout{display:block}
+  .content{padding:0;max-width:100%;width:100%}
+
+  /* Cabecera de impresión */
+  .print-header{display:block !important;text-align:center;border-bottom:2pt solid #1a1a2e;padding-bottom:14pt;margin-bottom:28pt}
+  .print-header-title{font-size:22pt;font-weight:bold;color:#1a1a2e;letter-spacing:-0.5px}
+  .print-header-sub{font-size:10pt;color:#555570;margin-top:4pt}
+
+  /* Tipografía */
+  h1{font-size:0;line-height:0;margin:0;padding:0;visibility:hidden} /* sustituido por print-header */
+  .page-sub{display:none}
+  h2{font-size:14pt;font-weight:bold;color:#1a1a2e;margin:20pt 0 8pt;padding-top:14pt;border-top:1pt solid #c0c0d0;page-break-after:avoid}
+  h2:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  h3{font-size:12pt;font-weight:bold;color:var(--blue);margin:12pt 0 5pt;page-break-after:avoid}
+  p{margin-bottom:7pt;color:#1a1a2e;font-size:11pt}
+  strong{color:#1a1a2e}
+  em{color:#b05010;font-style:normal}
+
+  /* Saltos de página */
+  section{page-break-inside:avoid}
+  .mod-header{page-break-after:avoid}
+  h2,h3{page-break-after:avoid}
+
+  /* Module headers */
+  .mod-header{background:#f0f0f8 !important;border-left:3pt solid var(--mc) !important;border-radius:0;padding:10pt 14pt;margin:14pt 0 10pt}
+  .mod-title{color:var(--mc) !important;font-size:14pt}
+  .mod-number{color:#555570;font-size:9pt;letter-spacing:2px}
+  .mod-subtitle{color:#555570;font-size:9pt}
+
+  /* Tablas */
+  .slider-table,.lufs-table{width:100%;border-collapse:collapse;font-size:9.5pt;margin:8pt 0 14pt}
+  .slider-table th,.lufs-table th{background:#e8e8f0 !important;padding:5pt 9pt;color:#333350;font-size:8pt;letter-spacing:1.5px;border-bottom:1pt solid #b0b0c8;font-weight:bold}
+  .slider-table td,.lufs-table td{padding:6pt 9pt;border-bottom:.5pt solid #d0d0e4;vertical-align:top;color:#1a1a2e;line-height:1.5}
+  .slider-table tr:last-child td,.lufs-table tr:last-child td{border-bottom:none}
+  .slider-table tr:hover td{background:transparent}
+  .slider-name{color:#1a1a2e;font-weight:bold}
+  .slider-range{color:var(--blue);font-family:monospace;font-size:9pt}
+  .up{color:var(--green)}
+  .down{color:var(--red)}
+  .neutral{color:#555570}
+
+  /* Cajas de tip/warn/good */
+  .tip,.warn,.good{
+    border-left:3pt solid;padding:8pt 12pt;border-radius:0;margin:8pt 0;font-size:10pt;
+    background:#f8f8fc !important;page-break-inside:avoid
+  }
+  .tip{border-color:var(--blue);color:#1a3a6a}
+  .warn{border-color:var(--orange);color:#5a2800}
+  .good{border-color:var(--green);color:#0a3a18}
+
+  /* Steps */
+  .steps{margin:10pt 0}
+  .step{background:#f5f5f8 !important;border:1pt solid #d0d0e0;border-radius:0;padding:9pt 12pt;margin-bottom:8pt;page-break-inside:avoid}
+  .step::before{background:var(--blue) !important;width:22pt;height:22pt;font-size:11pt}
+  .step-content h4{color:#1a1a2e;font-size:11pt}
+  .step-content p{color:#333350}
+
+  /* Rules grid */
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:8pt}
+  .rule{background:#f5f5f8 !important;border:1pt solid #d0d0e0;border-radius:0;padding:9pt 12pt;page-break-inside:avoid}
+  .rule-title{color:#1a1a2e;font-size:10.5pt}
+  .rule-text{color:#333350;font-size:9.5pt}
+
+  /* Chain diagram */
+  .chain{background:#f0f0f8 !important;border:1pt solid #c0c0d0;border-radius:0;padding:10pt 14pt}
+  .chain-node{border:1pt solid;padding:3pt 8pt;font-size:10pt}
+  .chain-arrow{color:#888899}
+  .chain-label{color:#555570}
+
+  /* Spectrum legend */
+  .spectrum-legend{grid-template-columns:repeat(3,1fr);gap:8pt}
+  .legend-item{background:#f5f5f8 !important;border:1pt solid #d0d0e0;border-radius:0;padding:8pt 12pt}
+  .legend-title{color:#1a1a2e;font-size:10.5pt}
+  .legend-desc{color:#333350}
+
+  /* Footer de página */
+  @page{margin:18mm 16mm 18mm;size:A4}
+  @page :first{margin-top:12mm}
+
+  /* Ocultar elementos no imprimibles */
+  .no-print{display:none !important}
+}
+</style>
+</head>
+<body>
+<script>
+// Cuando help.html se abre con window.open() desde la app, el botón "Volver" cierra la pestaña.
+// Si se navega directamente (sin opener), el href="index.html" actúa con normalidad.
+document.addEventListener('DOMContentLoaded', function() {
+  var back = document.querySelector('.sidebar-back');
+  if (!back) return;
+  if (window !== window.top) {
+    // Dentro de un iframe (caso legacy): cerrar overlay
+    back.textContent = '✕  Cerrar ayuda';
+    back.removeAttribute('href');
+    back.style.cursor = 'pointer';
+    back.addEventListener('click', function(e) { e.preventDefault(); window.parent.postMessage('closeHelp', '*'); });
+  } else {
+    // Abierto en pestaña nueva (window.open) o navegación directa: cerrar pestaña
+    back.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.close();
+      // Fallback por si el navegador bloquea window.close(): volver atrás en historial
+      if (!window.closed) window.history.back();
+    });
+  }
+});
+</script>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <a class="sidebar-back" href="index.html">← Volver</a>
+  <button class="btn-print" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Imprimir guía
+  </button>
+  <div class="sidebar-title">GUÍA DE USO</div>
+
+  <div class="nav-section">INTRODUCCIÓN</div>
+  <a class="nav-link" href="#que-es">¿Qué hace esta app?</a>
+  <a class="nav-link" href="#flujo">Flujo de trabajo</a>
+  <a class="nav-link" href="#analisis">El análisis espectral</a>
+
+  <div class="nav-section">LA CADENA</div>
+  <a class="nav-link mod" href="#hpf"><span class="mod-dot" style="background:#ff6b6b"></span>HPF</a>
+  <a class="nav-link mod" href="#eqsub"><span class="mod-dot" style="background:#ffa94d"></span>EQ Correctiva</a>
+  <a class="nav-link mod" href="#sat"><span class="mod-dot" style="background:#ffd43b"></span>Saturación</a>
+  <a class="nav-link mod" href="#comp"><span class="mod-dot" style="background:#69db7c"></span>Bus Compressor</a>
+  <a class="nav-link mod" href="#eqadd"><span class="mod-dot" style="background:#4dabf7"></span>EQ Tonal</a>
+  <a class="nav-link mod" href="#width"><span class="mod-dot" style="background:#cc5de8"></span>Stereo Width</a>
+  <a class="nav-link mod" href="#lim"><span class="mod-dot" style="background:#f783ac"></span>Limiter</a>
+
+  <div class="nav-section">CONTROLES</div>
+  <a class="nav-link" href="#ab">Comparación A/B</a>
+  <a class="nav-link" href="#loop">Loop / Bucle</a>
+  <a class="nav-link" href="#presets">Presets</a>
+  <a class="nav-link" href="#export">Exportación</a>
+
+  <div class="nav-section">VISUALIZACIONES</div>
+  <a class="nav-link" href="#realtime">Analizador en tiempo real</a>
+  <a class="nav-link" href="#timeline">Línea de tiempo</a>
+  <a class="nav-link" href="#vumeter">Output Gain y VU Meter</a>
+
+  <div class="nav-section">MÉTRICAS</div>
+  <a class="nav-link" href="#lufs">LUFS-I integrado</a>
+  <a class="nav-link" href="#truepeak">True Peak</a>
+
+  <div class="nav-section">REFERENCIA</div>
+  <a class="nav-link" href="#reglas">Reglas de oro</a>
+</nav>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <div class="print-header" style="display:none">
+    <div class="print-header-title">AI Mastering Engine — Guía completa de uso</div>
+    <div class="print-header-sub">Documentación v3.0 · Referencia de sliders, visualizaciones, loop, LUFS y True Peak</div>
+  </div>
+  <h1>AI Mastering Engine</h1>
+  <p class="page-sub">Guía completa de uso · Cadena de masterización profesional pop-rock en el navegador</p>
+
+  <!-- ═══════════════════════════════ QUÉ ES -->
+  <h2 id="que-es">¿Qué hace esta app?</h2>
+  <p>Esta herramienta aplica una <strong>cadena de masterización profesional</strong> sobre tu mezcla exportada (bounced mix). No es un plugin de DAW — es un motor de procesado completo que funciona directamente en el navegador usando la Web Audio API.</p>
+  <p>Cuando cargas tu pista, la app hace tres cosas automáticamente: <strong>analiza su espectro frecuencial</strong>, <strong>calcula los ajustes óptimos</strong> para cada módulo comparando tu mezcla con la curva típica del pop-rock comercial, y <strong>prepara la cadena de procesado en tiempo real</strong> lista para reproducir.</p>
+
+  <div class="tip">
+    <strong>¿Qué debes cargar?</strong> Tu mezcla terminada, bounceada en estéreo (WAV o AIFF preferiblemente). La masterización trabaja sobre la mezcla completa, no sobre pistas individuales. Asegúrate de que tu mezcla no supere -3 dBFS de pico y tenga algo de headroom.
+  </div>
+
+  <!-- ═══════════════════════════════ FLUJO -->
+  <h2 id="flujo">Flujo de trabajo recomendado</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-content">
+        <h4>Carga tu mezcla</h4>
+        <p>Arrastra el archivo o haz clic en la zona de carga. Formatos aceptados: MP3, WAV, FLAC, AAC, OGG, M4A. El WAV sin comprimir da mejores resultados.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Lee el análisis espectral</h4>
+        <p>Observa qué bandas están lejos de la línea target (azul punteada). Los números en rojo indican cuántos dB de diferencia hay. Esto te dice qué módulos necesitan más atención.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Pulsa ▶ Masterizado y escucha</h4>
+        <p>La cadena ya tiene ajustes auto-calculados. Escucha el resultado antes de tocar nada. Compara con ▶ Original para evaluar el punto de partida.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Ajusta módulo a módulo, de arriba a abajo</h4>
+        <p>Sigue el orden de la cadena: HPF → EQ Correctiva → Saturación → Bus Comp → EQ Tonal → Stereo → Limiter. Cada módulo prepara la señal para el siguiente. Los cambios se aplican al instante mientras escuchas.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Usa A/B constantemente</h4>
+        <p>Alterna entre Original y Masterizado cada 30 segundos. El oído se adapta rápido y pierde perspectiva. El A/B fuerza una comparación objetiva. Si el masterizado no mejora claramente, algo está mal.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Guarda el preset y exporta</h4>
+        <p>Guarda el preset (💾) antes de exportar, por si necesitas volver a los ajustes. Luego selecciona la profundidad de bits (24-bit para entrega profesional, 16-bit para distribución directa) y pulsa <strong>⬇ WAV</strong>. El Output Gain ajusta el nivel final antes de renderizar.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ ANÁLISIS -->
+  <h2 id="analisis">El análisis espectral</h2>
+  <p>El gráfico muestra el nivel promedio de energía de tu mezcla dividido en 7 bandas de frecuencia. Es una <strong>fotografía estática</strong> del contenido espectral de los primeros ~30% de la canción, no un medidor en tiempo real.</p>
+
+  <div class="spectrum-legend">
+    <div class="legend-item">
+      <div class="legend-icon">🟥</div>
+      <div class="legend-title">Barra A (color)</div>
+      <div class="legend-desc">Tu mezcla original. Muestra el nivel real de cada banda en dBFS antes de masterizar.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">⬜</div>
+      <div class="legend-title">Barra B (blanca)</div>
+      <div class="legend-desc">Tu mezcla tras la cadena de masterización. Se calcula en segundo plano y aparece sola.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">〰️</div>
+      <div class="legend-title">Línea azul punteada</div>
+      <div class="legend-desc">Target pop-rock: el balance espectral promedio de masters comerciales. Es una referencia relativa, no absoluta.</div>
+    </div>
+  </div>
+
+  <p>Los <strong>números sobre cada barra</strong> indican cuántos dB de diferencia hay entre esa barra y su línea target. Un número negativo grande (ej. −33) significa que esa banda está muy por debajo del balance típico de un master comercial.</p>
+
+  <div class="tip warn">
+    <strong>Importante:</strong> Que las barras no lleguen a la línea target no significa que tu mezcla esté mal. La diferencia vertical también refleja la diferencia de <em>loudness general</em> entre tu mix y un master comercial. Lo que importa es la <em>forma relativa</em> de las barras entre sí, y que la barra B (masterizada) esté más cerca de la línea que la barra A.
+  </div>
+
+  <h3>Las 7 bandas de frecuencia</h3>
+  <table class="slider-table">
+    <tr><th>Banda</th><th>Rango</th><th>Qué contiene</th></tr>
+    <tr><td class="slider-name">Sub</td><td class="slider-range">20–80 Hz</td><td>Frecuencias subsónicas. Bombo profundo, bajos muy graves. Peligrosas si son excesivas.</td></tr>
+    <tr><td class="slider-name">Low</td><td class="slider-range">80–250 Hz</td><td>Cuerpo del bajo, cuerpo del bombo, warmth de la mezcla.</td></tr>
+    <tr><td class="slider-name">Lo-Mid</td><td class="slider-range">250–500 Hz</td><td>Zona de barro/mud. Cuerpo de guitarras y voces. Fácilmente problemática.</td></tr>
+    <tr><td class="slider-name">Mid</td><td class="slider-range">500–2000 Hz</td><td>Presencia, inteligibilidad vocal, cuerpo de instrumentos.</td></tr>
+    <tr><td class="slider-name">Hi-Mid</td><td class="slider-range">2–8 kHz</td><td>Ataque, definición, articulación. La zona que "corta" en el mix.</td></tr>
+    <tr><td class="slider-name">High</td><td class="slider-range">8–16 kHz</td><td>Brillo, sibilancia, presencia de los platillos.</td></tr>
+    <tr><td class="slider-name">Air</td><td class="slider-range">16–22 kHz</td><td>Aire, apertura, "el sonido de la habitación". El ingrediente del sonido profesional.</td></tr>
+  </table>
+
+  <h3>Métricas de análisis</h3>
+  <p>Sobre el espectro aparecen 5 métricas calculadas al cargar el archivo. Tras masterizar, se muestra el valor procesado junto al original:</p>
+  <table class="slider-table">
+    <tr><th>Métrica</th><th>Qué mide</th><th>Zona óptima</th></tr>
+    <tr><td class="slider-name">LUFS-I</td><td>Loudness integrado según ITU-R BS.1770-4 con K-weighting y gating absoluto/relativo. El número real que usan Spotify, Apple Music y YouTube.</td><td class="slider-range">−16 a −9 LUFS</td></tr>
+    <tr><td class="slider-name">True Peak</td><td>Pico inter-muestral calculado con interpolación cúbica 4× (estándar ITU). Detecta clips que solo aparecen al recodificar a MP3/AAC, invisibles en el WAV.</td><td class="slider-range">≤ −1.0 dBTP</td></tr>
+    <tr><td class="slider-name">Rang. Din.</td><td>Diferencia entre los niveles más altos y más bajos (estimación DR). Valores bajos = masters muy comprimidos.</td><td class="slider-range">7–14 dB</td></tr>
+    <tr><td class="slider-name">Correlac.</td><td>Fase estéreo. +1 = mono perfecto. 0 = sin correlación. Negativo = problemas de fase.</td><td class="slider-range">0.5–0.95</td></tr>
+    <tr><td class="slider-name">Duración</td><td>Duración del archivo y frecuencia de muestreo original.</td><td>—</td></tr>
+  </table>
+  <div class="tip warn"><strong>True Peak solo se calcula sobre el master procesado</strong>, no sobre el original. Aparece en la columna "→ después" una vez completado el análisis en segundo plano (5–30 segundos según duración).</div>
+  <p>Los módulos se procesan <strong>en orden fijo de izquierda a derecha</strong>. Cada etapa prepara la señal para la siguiente. No puedes cambiar el orden y no deberías querer hacerlo: el orden es la receta.</p>
+  <div class="chain">
+    <span class="chain-label">IN</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#ff6b6b;border-color:#ff6b6b">HPF</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#ffa94d;border-color:#ffa94d">EQ−</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#ffd43b;border-color:#ffd43b">SAT</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#69db7c;border-color:#69db7c">COMP</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#4dabf7;border-color:#4dabf7">EQ+</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#cc5de8;border-color:#cc5de8">WIDTH</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#f783ac;border-color:#f783ac">LIM</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node" style="color:#ffd43b;border-color:#ffd43b">OUT GAIN</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-label">OUT</span>
+  </div>
+
+  <!-- HPF -->
+  <div class="mod-header" style="--mc:#ff6b6b">
+    <div>
+      <div class="mod-number">MÓDULO 1</div>
+      <div class="mod-title">High Pass Filter (HPF)</div>
+      <div class="mod-subtitle">Filtro de paso alto — elimina el subsónico</div>
+    </div>
+  </div>
+  <p>Corta todas las frecuencias por debajo de su frecuencia de corte. El contenido sub-sónico es <strong>inaudible pero destructivo</strong>: consume headroom del limitador y hace que el compresor bombee reaccionando a energía que no escuchas. Eliminarlo libera espacio dinámico real.</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Frecuencia de corte</td>
+      <td class="slider-range">15–80 Hz</td>
+      <td><span class="up">↑ Sube</span> para cortar más graves<br><span class="down">↓ Baja</span> para conservar más graves</td>
+      <td>Déjalo en <em>20-22 Hz</em> para música completa. Sube a <em>30-40 Hz</em> si la mezcla tiene exceso de rumble o ruido de sala. Nunca superes 80 Hz o perderás cuerpo en el bajo.</td>
+    </tr>
+  </table>
+  <div class="tip" style="--mc:#ff6b6b"><strong>Regla:</strong> Siempre activo. Ninguna mezcla profesional llega a masterización sin HPF entre 20-30 Hz.</div>
+
+  <!-- EQ CORRECTIVA -->
+  <div class="mod-header" style="--mc:#ffa94d">
+    <div>
+      <div class="mod-number">MÓDULO 2</div>
+      <div class="mod-title">EQ Correctiva (Sustractiva)</div>
+      <div class="mod-subtitle">Tres filtros peak para eliminar resonancias y problemas</div>
+    </div>
+  </div>
+  <p>Su misión es <strong>quitar lo que sobra</strong>, antes de que el compresor lo amplifique. El compresor no distingue entre una resonancia molesta y contenido musical útil: si hay un pico a 300 Hz, el compresor lo aplastará todo junto. Recortar primero hace que el compresor trabaje solo sobre dinámica musical.</p>
+  <p>Tiene 3 bandas independientes, cada una con 3 parámetros:</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango típico</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Ganancia</td>
+      <td class="slider-range">−12 a 0 dB</td>
+      <td><span class="down">↓ Siempre hacia abajo</span></td>
+      <td>Esta EQ es <em>solo de corte</em>. Si subes la ganancia, es solo para localizar la resonancia (oirás que algo suena "feo") y luego la bajas para cortarla. Cortes típicos: −2 a −6 dB.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Frecuencia</td>
+      <td class="slider-range">80–4000 Hz</td>
+      <td><span class="neutral">↔ Barre para encontrar</span></td>
+      <td>Muévelo mientras escuchas. Las zonas problemáticas más comunes: <em>200-400 Hz</em> = barro/mud, <em>500-800 Hz</em> = nasalidad, <em>1-2 kHz</em> = dureza/metalismo. Cuando encuentres algo que molesta, fija la frecuencia y corta.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Q (precisión)</td>
+      <td class="slider-range">0.5–10</td>
+      <td><span class="up">↑ Sube</span> para cortes más precisos<br><span class="down">↓ Baja</span> para cortes más amplios</td>
+      <td>Para resonancias concretas: <em>Q 3-8</em> (corte quirúrgico). Para suavizar una zona amplia: <em>Q 0.8-1.5</em>. Un Q muy alto (8-10) afecta casi solo a esa frecuencia exacta.</td>
+    </tr>
+  </table>
+  <div class="tip warn" style="--mc:#ffa94d"><strong>Si no sabes qué cortar:</strong> deja las ganancias a 0 dB. No corrijas lo que no está roto. Es mejor no usar este módulo que hacer cortes aleatorios.</div>
+  <div class="tip" style="--mc:#ffa94d"><strong>Técnica de barrido:</strong> Sube la ganancia a +6 dB, arrastra lentamente el slider de frecuencia de un extremo al otro escuchando. Cuando algo suene "feo" o "agresivo", has encontrado una resonancia. Baja la ganancia a −3 o −4 dB para cortarla.</div>
+
+  <!-- SATURACIÓN -->
+  <div class="mod-header" style="--mc:#ffd43b">
+    <div>
+      <div class="mod-number">MÓDULO 3</div>
+      <div class="mod-title">Saturación (Tape Warmth)</div>
+      <div class="mod-subtitle">Distorsión armónica controlada — el calor analógico</div>
+    </div>
+  </div>
+  <p>Introduce distorsión armónica suave usando una curva matemática (tanh) que imita el comportamiento de la cinta magnética analógica. El audio digital puro es "demasiado perfecto" — el oído humano lo percibe como frío o delgado. La saturación añade <strong>densidad espectral</strong> sin que suene a distorsión: simplemente suena más lleno y presente.</p>
+  <p>Está colocado <strong>antes del compresor</strong> a propósito: el compresor luego "asienta" los armónicos generados, exactamente como ocurre en una cadena de hardware analógico (cinta → compresor).</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango</th><th>Dirección</th><th>Referencia de valores</th></tr>
+    <tr>
+      <td class="slider-name">Cantidad (tape warmth)</td>
+      <td class="slider-range">0.0–0.8</td>
+      <td><span class="up">↑ Sube</span> para más calidez y densidad<br><span class="down">↓ Baja</span> para más transparencia digital</td>
+      <td>
+        <em>0.05–0.15</em> = calidez imperceptible sola, pero notable al quitar el módulo<br>
+        <em>0.15–0.30</em> = color analógico suave y musical ✓ zona habitual<br>
+        <em>0.30–0.50</em> = saturación claramente audible<br>
+        <em>0.50+</em> = efecto intencionado de saturación intensa
+      </td>
+    </tr>
+  </table>
+  <div class="tip" style="--mc:#ffd43b"><strong>El test definitivo:</strong> Ajusta a tu gusto, luego desactiva el módulo con el toggle. Si el mix suena repentinamente "más delgado" o "más digital", el valor era correcto. Si no notas diferencia, sube un poco más.</div>
+
+  <!-- BUS COMPRESSOR -->
+  <div class="mod-header" style="--mc:#69db7c">
+    <div>
+      <div class="mod-number">MÓDULO 4</div>
+      <div class="mod-title">Bus Compressor (Glue)</div>
+      <div class="mod-subtitle">El "pegamento" que une todos los instrumentos</div>
+    </div>
+  </div>
+  <p>Cuando 20 instrumentos grabados por separado pasan por un compresor suave en el bus estéreo, todos bajan ligeramente <em>al mismo tiempo</em>, creando la sensación de que están tocando juntos en la misma sala. Eso es el <strong>glue</strong>. No es sobre hacer el sonido más fuerte — es sobre hacer que suene cohesionado.</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango típico</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Threshold</td>
+      <td class="slider-range">−28 a 0 dB</td>
+      <td><span class="down">↓ Baja</span> para más compresión<br><span class="up">↑ Sube</span> para menos compresión</td>
+      <td>El punto donde el compresor empieza a actuar. Comienza en <em>−18 dB</em> y baja hasta que percibas que la mezcla "se asienta" y los elementos se integran mejor. Objetivo: <em>2–4 dB de reducción de ganancia</em> (GR).</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Ratio</td>
+      <td class="slider-range">1.5:1–8:1</td>
+      <td><span class="down">↓ Baja</span> para glue suave<br><span class="up">↑ Sube</span> para compresión obvia</td>
+      <td><em>2:1</em> = glue clásico, muy musical. <em>3:1–4:1</em> = compresión audible. Por encima de 4:1 ya suena claramente a compresor. Para masterización pop-rock, raramente deberías pasar de 3:1.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Attack</td>
+      <td class="slider-range">5–300 ms</td>
+      <td><span class="up">↑ Sube (lento)</span> = más punch, transientes libres<br><span class="down">↓ Baja (rápido)</span> = más control, menos punch</td>
+      <td>El tiempo que tarda en actuar. <em>30–50 ms</em> es el punto de glue clásico: deja pasar el inicio del bombo y el snare (lo que crea el punch), pero controla la dinámica general. Nunca bajes de 10 ms en masterización salvo intención clara.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Release</td>
+      <td class="slider-range">50–600 ms</td>
+      <td><span class="up">↑ Sube (lento)</span> = más natural, menos visible<br><span class="down">↓ Baja (rápido)</span> = más energía, riesgo de pumping</td>
+      <td>El tiempo que tarda en soltar. <em>150–250 ms</em> es el rango habitual. Si escuchas que la mezcla "respira" o "bombea" (el nivel sube y baja rítmicamente de forma obvia), alarga el release.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Makeup Gain</td>
+      <td class="slider-range">0–12 dB</td>
+      <td><span class="up">↑ Sube</span> para recuperar el volumen perdido</td>
+      <td>El compresor baja el nivel al actuar. El Makeup Gain lo recupera. Ajústalo hasta que el volumen percibido con el compresor activado sea similar al que tenías sin él — así puedes comparar de forma justa si el compresor realmente mejora el sonido.</td>
+    </tr>
+  </table>
+  <div class="tip" style="--mc:#69db7c"><strong>La regla del glue:</strong> 2–4 dB de reducción de ganancia (GR) es suficiente. Si ves más de 6 dB de GR en el compresor, estás comprimiendo demasiado — subirás el umbral o bajarás el ratio.</div>
+  <div class="tip warn" style="--mc:#69db7c"><strong>Error frecuente:</strong> usar el Makeup Gain para "hacer sonar más fuerte" en lugar del Limiter. El Makeup Gain es solo compensación. El limitador es quien controla el nivel final.</div>
+
+  <!-- EQ TONAL -->
+  <div class="mod-header" style="--mc:#4dabf7">
+    <div>
+      <div class="mod-number">MÓDULO 5</div>
+      <div class="mod-title">EQ Tonal (Aditiva)</div>
+      <div class="mod-subtitle">Cuatro filtros amplios para dar carácter al sonido final</div>
+    </div>
+  </div>
+  <p>Está <strong>después del compresor</strong> a propósito: ecualizas la señal ya comprimida y cohesionada. Aquí ya no corriges problemas (eso fue la EQ Correctiva) — <strong>das carácter</strong>. Piensa en ella como pinturas de color amplio sobre un lienzo ya limpio.</p>
+  <p><em>Diferencia clave con la EQ Correctiva:</em> esta usa filtros amplios (Q bajo), los cambios son en ambas direcciones, y los movimientos típicos son pequeños (+1 a +3 dB). La EQ Correctiva usaba Q alto y solo cortaba.</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Frecuencia</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Low</td>
+      <td class="slider-range">120 Hz shelf</td>
+      <td><span class="up">↑ Sube</span> para más cuerpo y warmth<br><span class="down">↓ Baja</span> si hay demasiada gravedad</td>
+      <td>Añade cuerpo y calidez. Mueve en pasos de <em>0.5 dB</em>. Más de +3 dB suele sonar empastado. Si subiste el Low en EQ Correctiva, ten cuidado de no doblar el efecto aquí.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Mid</td>
+      <td class="slider-range">1 kHz peak</td>
+      <td><span class="up">↑ Sube</span> para más presencia e inteligibilidad<br><span class="down">↓ Baja</span> si la voz o guitarra suenan duras</td>
+      <td>El rango de presencia vocal y de guitarra. Subir +1 a +2 dB hace que la mezcla "corte" mejor en monitores pequeños. Bajar −1 a −2 dB suaviza mezclas que suenan agresivas.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">High</td>
+      <td class="slider-range">8 kHz peak</td>
+      <td><span class="up">↑ Sube</span> para más definición y claridad<br><span class="down">↓ Baja</span> si hay sibilancia o dureza</td>
+      <td>Zona de definición y ataque. +1 a +2 dB añade claridad. Cuidado con la sibilancia vocal — si esta zona ya es problemática en tu mezcla, no la subas aquí.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Air</td>
+      <td class="slider-range">16 kHz shelf</td>
+      <td><span class="up">↑ Sube casi siempre</span><br><span class="down">↓ Baja</span> solo si hay silbidos digitales</td>
+      <td>El ingrediente secreto del sonido profesional moderno. Un boost de <em>+1.5 a +3 dB</em> a 16 kHz abre el espacio encima de la mezcla sin añadir brillantez artificial. Casi todas las mezclas de pop-rock mejoran con este boost. Pruébalo con los ojos cerrados.</td>
+    </tr>
+  </table>
+  <div class="tip" style="--mc:#4dabf7"><strong>Regla de la EQ Tonal:</strong> si en la EQ Correctiva cortaste a 350 Hz, no toques esa zona aquí. Estarías deshaciendo tu propio trabajo.</div>
+  <div class="tip good" style="--mc:#4dabf7"><strong>El Air es el mayor secreto:</strong> activa/desactiva el módulo completo mientras escuchas con Air en +2 dB. Escucharás inmediatamente la apertura que añade. Eso es lo que diferencia muchos masters caseros de los profesionales.</div>
+
+  <!-- STEREO WIDTH -->
+  <div class="mod-header" style="--mc:#cc5de8">
+    <div>
+      <div class="mod-number">MÓDULO 6</div>
+      <div class="mod-title">Stereo Width (M/S)</div>
+      <div class="mod-subtitle">Matriz Mid/Side — control de amplitud estéreo</div>
+    </div>
+  </div>
+  <p>Descompone el estéreo en señal <strong>Mid</strong> (L+R, lo que hay en el centro: voz, bombo, bajo) y señal <strong>Side</strong> (L−R, lo que hay en los laterales: guitarras, coros, reverbs). Escala las laterales independientemente del centro y recompone. El centro permanece intacto — la voz y el bajo no se mueven.</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Amplitud M/S</td>
+      <td class="slider-range">0.5–2.0</td>
+      <td><span class="up">↑ Por encima de 1.0</span> = más ancho<br><span class="neutral">= 1.0</span> = sin cambio (original)<br><span class="down">↓ Por debajo de 1.0</span> = más estrecho/mono</td>
+      <td>
+        <em>1.05–1.20</em> = ensanchamiento sutil, casi transparente ✓ para mezclas ya bien equilibradas<br>
+        <em>1.20–1.40</em> = más apertura espacial, notable pero musical<br>
+        <em>1.40–1.60</em> = efecto audible, puede sonar "abierto" en monitores pero mal en mono<br>
+        <em>Por encima de 1.60</em> = riesgo de problemas de fase, evitar
+      </td>
+    </tr>
+  </table>
+  <div class="tip warn" style="--mc:#cc5de8"><strong>Test de mono obligatorio:</strong> Después de ajustar el width, pon el valor a <em>0.0</em> (mono puro) y escucha. Si el bombo, bajo o voz desaparecen o se debilitan notablemente, tu mezcla tiene problemas de fase que el width está amplificando. El problema está en la mezcla original, no en este módulo.</div>
+
+  <!-- LIMITER -->
+  <div class="mod-header" style="--mc:#f783ac">
+    <div>
+      <div class="mod-number">MÓDULO 7</div>
+      <div class="mod-title">Limiter (Brick Wall)</div>
+      <div class="mod-subtitle">Techo final — siempre el último eslabón</div>
+    </div>
+  </div>
+  <p>Un compresor con ratio 20:1 y ataque ultrarápido (1ms). Ninguna muestra del audio resultante superará el Ceiling configurado. Es el <strong>techo absoluto</strong> del master. También actúa como control de loudness final: cuanto más alto esté el Makeup Gain del compresor (o más activo esté el material), más trabajará el limitador.</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Ceiling (techo)</td>
+      <td class="slider-range">−6 a −0.1 dBFS</td>
+      <td><span class="up">↑ Más cerca de 0</span> = más fuerte pero más riesgo<br><span class="down">↓ Más bajo</span> = más headroom para codecs</td>
+      <td>
+        <em>−1.0 dBFS</em> = estándar para streaming (Spotify, Apple Music, YouTube) ✓<br>
+        <em>−0.3 dBFS</em> = para masterización de CD físico<br>
+        <em>−2.0 dBFS o menos</em> = si la canción va a ser remasterizada o procesada más adelante
+      </td>
+    </tr>
+  </table>
+
+  <h3>Plataformas de streaming y LUFS</h3>
+  <p>Las plataformas normalizan la loudness automáticamente. Si tu master es más fuerte que su target, lo bajarán. Conocer estos valores te ayuda a decidir cuánto "empujar" el limitador:</p>
+  <table class="lufs-table">
+    <tr><th>Plataforma</th><th>Target LUFS</th><th>Ceiling recomendado</th></tr>
+    <tr><td>Spotify</td><td>−14 LUFS (integrado)</td><td>−1.0 dBFS</td></tr>
+    <tr><td>Apple Music</td><td>−16 LUFS (integrado)</td><td>−1.0 dBFS</td></tr>
+    <tr><td>YouTube</td><td>−14 LUFS (integrado)</td><td>−1.0 dBFS</td></tr>
+    <tr><td>Tidal</td><td>−14 LUFS (integrado)</td><td>−1.0 dBFS</td></tr>
+    <tr><td>CD / Físico</td><td>Sin normalización</td><td>−0.3 dBFS</td></tr>
+  </table>
+  <div class="tip warn" style="--mc:#f783ac"><strong>Si el limitador "bombea"</strong> (escuchas que el volumen sube y baja visiblemente de forma rítmica), significa que hay demasiado nivel llegando al limitador. La solución es reducir el Makeup Gain del compresor o bajar el Output Gain, no tocar el Ceiling del limitador.</div>
+
+  <!-- OUTPUT GAIN -->
+  <div class="mod-header" style="--mc:#ffd43b">
+    <div>
+      <div class="mod-number">POST-CADENA</div>
+      <div class="mod-title">Output Gain</div>
+      <div class="mod-subtitle">Trim de salida post-limitador — se bake en el WAV exportado</div>
+    </div>
+  </div>
+  <p>El Output Gain es el <strong>último control de toda la cadena</strong>, después del limitador. A diferencia del Makeup Gain del compresor (que afecta a cuánto trabaja el limitador), el Output Gain ajusta el nivel <em>después</em> de que el limitador ya haya hecho su trabajo. Esto permite subir o bajar el nivel final sin cambiar el comportamiento de la compresión ni del limiting.</p>
+  <table class="slider-table">
+    <tr><th>Slider</th><th>Rango</th><th>Dirección</th><th>Cuándo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Output Gain</td>
+      <td class="slider-range">−12 a +6 dB</td>
+      <td><span class="up">↑ Sube</span> para más volumen de entrega<br><span class="down">↓ Baja</span> para dejar headroom o igualar percepción</td>
+      <td>
+        <em>0 dB</em> = sin cambio (por defecto) ✓<br>
+        <em>−1 a −3 dB</em> = si el True Peak supera −1 dBTP<br>
+        <em>+1 a +2 dB</em> = para igualar volumen percibido con el original al hacer A/B<br>
+        <em>−6 a −12 dB</em> = si el master va a ser re-procesado por otro motor
+      </td>
+    </tr>
+  </table>
+  <div class="tip good" style="--mc:#ffd43b"><strong>Truco para A/B justo:</strong> si el masterizado suena más fuerte que el original al comparar, baja el Output Gain hasta igualar el volumen percibido. Así el cerebro no interpreta "más fuerte" como "mejor" y la comparación es objetiva.</div>
+
+  <!-- A/B -->
+  <h2 id="ab">Comparación A/B</h2>
+  <p>El botón <strong>▶ Original</strong> reproduce tu mezcla sin ningún procesado. El botón <strong>▶ Masterizado</strong> reproduce la misma pista pasando por toda la cadena en tiempo real. Al alternar entre ambos, el punto de reproducción <strong>no se pierde</strong> — puedes saltar de uno a otro en el mismo instante de la canción. El cambio incorpora un <strong>crossfade de 55ms</strong> que elimina el clic digital al cambiar de fuente.</p>
+  <div class="tip good"><strong>Cómo hacer un buen A/B:</strong> el mayor error es comparar sin igualar el volumen. El masterizado suele sonar más fuerte, y el cerebro interpreta "más fuerte" como "mejor" aunque no lo sea. Usa el <strong>Output Gain</strong> para igualar el volumen percibido entre Original y Masterizado antes de comparar. Si el Masterizado sigue sonando mejor a igual volumen, el proceso está funcionando.</div>
+  <div class="tip"><strong>A/B con loop:</strong> activa el bucle en una sección representativa (estribillo, por ejemplo) y escucha ese fragmento en loop en modo Masterizado. Luego cambia a Original sin perder posición — escuchas exactamente el mismo fragmento sin procesar. Es la forma más precisa de evaluar el impacto real de la cadena.</div>
+
+  <!-- LOOP -->
+  <h2 id="loop">Loop / Bucle</h2>
+  <p>El botón <strong>⟳ Loop</strong> activa una región de repetición continua entre dos manejadores que aparecen en la línea de tiempo. Al activarlo, la waveform muestra la región de loop con un tinte púrpura y dos banderas triangulares arrastrables.</p>
+  <table class="slider-table">
+    <tr><th>Elemento</th><th>Función</th></tr>
+    <tr><td class="slider-name">▶ Manejador izquierdo</td><td>Define el punto de inicio del loop. Arrástralo para ajustar dónde empieza el bucle.</td></tr>
+    <tr><td class="slider-name">◀ Manejador derecho</td><td>Define el punto de final del loop. Al llegar aquí, la reproducción salta al inicio.</td></tr>
+    <tr><td class="slider-name">Zona oscurecida</td><td>El audio fuera del loop queda visualmente atenuado para indicar que no se reproduce en bucle.</td></tr>
+  </table>
+  <p>El loop funciona tanto en modo <strong>Original</strong> como en modo <strong>Masterizado</strong>. El cambio A/B mantiene la posición dentro del loop, lo que permite comparar el mismo fragmento indefinidamente.</p>
+  <div class="tip"><strong>Región por defecto:</strong> el loop se inicializa entre el 10% y el 90% de la duración total de la pista, evitando los silencios de inicio y final. Ajústalo a tu estribillo o a la sección que más variación tenga entre Original y Masterizado.</div>
+
+  <!-- PRESETS -->
+  <h2 id="presets">Presets</h2>
+  <p>Los botones 💾 y 📂 guardan y cargan todos los ajustes de todos los módulos como un archivo <code>.mpreset</code> (formato JSON). Esto permite:</p>
+  <ul style="margin:12px 0 16px;padding-left:24px;color:#ccd0f0;line-height:2">
+    <li>Guardar una configuración que funciona bien antes de experimentar</li>
+    <li>Reutilizar la misma cadena en pistas del mismo proyecto o artista</li>
+    <li>Compartir configuraciones con otros usuarios de la app</li>
+    <li>Construir una biblioteca de presets por género (pop, rock, jazz, electrónica…)</li>
+  </ul>
+  <div class="tip"><strong>Flujo recomendado:</strong> guarda el preset <em>antes</em> de hacer el export final. Si después necesitas ajustar algo y re-exportar, cargas el preset y tienes exactamente los mismos ajustes.</div>
+
+  <!-- EXPORT -->
+  <h2 id="export">Exportación</h2>
+  <p>El botón <strong>⬇ WAV</strong> renderiza la cadena completa con los ajustes actuales sobre el buffer original y descarga el resultado. Antes de exportar puedes seleccionar la <strong>profundidad de bits</strong>:</p>
+  <table class="slider-table">
+    <tr><th>Formato</th><th>Cuándo usarlo</th><th>Dithering</th></tr>
+    <tr><td class="slider-name">24-bit (por defecto)</td><td>Entrega a estudios, distribuidores digitales, plataformas de streaming que aceptan masters de alta calidad (DistroKid, TuneCore, CD Baby…). Estándar profesional.</td><td>No necesario — el headroom de 24-bit hace el dithering irrelevante</td></tr>
+    <tr><td class="slider-name">16-bit</td><td>CD físico, plataformas que solo aceptan 16-bit, archivos más pequeños para distribución directa.</td><td>TPDF triangular (±1 LSB) aplicado automáticamente para eliminar distorsión de cuantización</td></tr>
+  </table>
+  <p>El proceso tarda entre 10 y 60 segundos dependiendo de la duración y la velocidad del dispositivo. El <strong>Output Gain</strong> del momento del export se bake en el archivo — lo que escuchas en ▶ Masterizado es exactamente lo que obtendrás.</p>
+  <div class="tip warn"><strong>El export siempre usa los ajustes actuales.</strong> Si cambias sliders después de escuchar el resultado, el export vuelve a renderizar con los nuevos valores. Guarda el preset antes de exportar.</div>
+
+  <!-- VISUALIZACIONES -->
+  <h2 id="realtime">Analizador en tiempo real</h2>
+  <p>El canvas central del analizador muestra <strong>tres capas simultáneas</strong> superpuestas sobre el espectro de frecuencias:</p>
+  <div class="spectrum-legend">
+    <div class="legend-item">
+      <div class="legend-icon" style="color:#69db7c">━━</div>
+      <div class="legend-title">Espectro FFT (verde)</div>
+      <div class="legend-desc">Análisis frecuencial en tiempo real de la señal de salida. Activo y animado a 60fps durante la reproducción masterizada. En pausa muestra el espectro estático del análisis original en azul tenue.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon" style="color:#ffa94d">━━</div>
+      <div class="legend-title">EQ Correctiva (naranja)</div>
+      <div class="legend-desc">Curva de respuesta en frecuencia de los 3 filtros de la EQ Correctiva. Sube cuando hay realce, baja cuando hay corte. La línea punteada horizontal marca 0 dB (sin ganancia).</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon" style="color:#4dabf7">━━</div>
+      <div class="legend-title">EQ Tonal (azul)</div>
+      <div class="legend-desc">Curva de respuesta de los 4 filtros de la EQ Tonal (Low shelf, Mid, High, Air). Mismo sistema de referencia que la EQ Correctiva.</div>
+    </div>
+  </div>
+  <h3>Nodos EQ arrastrables</h3>
+  <p>Cada banda de ambos EQs aparece como un círculo numerado directamente sobre el espectro. Puedes <strong>arrastrarlos sin abrir los módulos individuales</strong>:</p>
+  <table class="slider-table">
+    <tr><th>Gesto</th><th>Efecto</th></tr>
+    <tr><td class="slider-name">Arrastrar horizontalmente</td><td>Cambia la frecuencia central de esa banda. Los nodos no pueden cruzarse entre sí (respetan el orden de frecuencias).</td></tr>
+    <tr><td class="slider-name">Arrastrar verticalmente</td><td>Cambia la ganancia (+boost / −corte). La escala visual está calibrada: cada 54 píxeles = ±12 dB.</td></tr>
+    <tr><td class="slider-name">Clic sin arrastrar</td><td>Selecciona el nodo (se muestra con halo). Los cambios se sincronizan automáticamente con los sliders de cada módulo individual.</td></tr>
+  </table>
+  <div class="tip"><strong>Flujo de trabajo visual:</strong> abre el analizador mientras escuchas en loop, arrastra los nodos naranjas sobre los picos del espectro que quieras cortar, y ajusta verticalmente hasta que la curva naranja compense el exceso. Más rápido que buscar frecuencias a ciegas en los sliders.</div>
+
+  <h2 id="timeline">Línea de tiempo</h2>
+  <p>La waveform muestra las <strong>peaks positivas y negativas</strong> del audio de forma simétrica (estilo DAW clásico). El color de la forma de onda cambia según el modo activo: verde en Masterizado, naranja en Original, azul en pausa.</p>
+  <table class="slider-table">
+    <tr><th>Elemento</th><th>Función</th></tr>
+    <tr><td class="slider-name">Cursor de reproducción</td><td>Línea vertical con triángulo superior. Muestra la posición exacta en tiempo real (actualizada a 60fps). El área a la izquierda del cursor se ilumina levemente.</td></tr>
+    <tr><td class="slider-name">Tiempo actual</td><td>Display en esquina superior izquierda en formato M:SS.d (décimas de segundo).</td></tr>
+    <tr><td class="slider-name">Marcadores 25/50/75%</td><td>Guías de tiempo con timestamp. Ayudan a orientarse en tracks largas.</td></tr>
+    <tr><td class="slider-name">Clic o toque</td><td>Navega a esa posición inmediatamente. Funciona tanto en pausa como en reproducción — el audio continúa desde el punto seleccionado.</td></tr>
+  </table>
+  <div class="tip warn"><strong>El cursor durante el loop</strong> muestra la posición real dentro de la región de bucle, no el tiempo transcurrido total. Al reiniciar el loop, el cursor vuelve al manejador izquierdo.</div>
+
+  <h2 id="vumeter">Output Gain y VU Meter</h2>
+  <p>A la derecha de la waveform hay un panel compacto con dos controles de salida:</p>
+  <h3>Output Gain</h3>
+  <p>Slider de <strong>−12 a +6 dB</strong> que ajusta el nivel de la señal <em>después</em> del limitador. Es el último punto de la cadena. El valor se bake en el WAV exportado — subir o bajar este slider cambia directamente el nivel del archivo descargado.</p>
+  <p>A diferencia del Makeup Gain del compresor, este control no afecta a cuánto trabaja el limitador: el limiting ya está hecho cuando la señal llega aquí.</p>
+  <h3>VU Meter L/R</h3>
+  <p>Dos barras verticales que muestran el nivel RMS de los canales <strong>Left y Right</strong> de la señal de salida en tiempo real:</p>
+  <table class="slider-table">
+    <tr><th>Elemento</th><th>Referencia</th></tr>
+    <tr><td class="slider-name">Barra de nivel (RMS)</td><td>Nivel medio de energía actualizado a 60fps. El gradiente de color indica el nivel: verde oscuro (−36 dBFS) → verde → amarillo → naranja → rojo (0 dBFS).</td></tr>
+    <tr><td class="slider-name">Tick de peak hold</td><td>Marca horizontal que muestra el pico máximo reciente. Se mantiene 2 segundos antes de actualizarse. Su color (verde/amarillo/rojo) indica si el pico es seguro o preocupante.</td></tr>
+    <tr><td class="slider-name">Línea roja (0 dBFS)</td><td>El techo absoluto. Si las barras llegan aquí consistentemente, el limitador está trabajando muy fuerte — considera reducir el Makeup Gain del compresor o el Output Gain.</td></tr>
+  </table>
+  <div class="tip good"><strong>Referencia de niveles:</strong> un master bien limitado a −14 LUFS suele mostrar picos de −3 a −1 dBFS en el VU meter. Si el tick de peak hold está constantemente en rojo, el master está demasiado comprimido/limitado.</div>
+
+  <!-- MÉTRICAS DETALLADAS -->
+  <h2 id="lufs">LUFS-I Integrado</h2>
+  <p>La métrica <strong>LUFS-I</strong> (Loudness Units Full Scale, Integrado) mide la loudness percibida de una grabación según el estándar <strong>ITU-R BS.1770-4</strong>. Es el número que todas las plataformas de streaming usan para normalizar el volumen de reproducción.</p>
+  <h3>Cómo se calcula</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-content">
+        <h4>K-weighting</h4>
+        <p>Se aplican dos filtros biquad en serie: un pre-filter high-shelf (+4 dB a 1682 Hz) que amplifica las frecuencias donde el oído es más sensible, y un filtro high-pass (38 Hz) que elimina el subsónico. El resultado es la señal "ponderada por el oído".</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Potencia por bloques</h4>
+        <p>La señal K-pesada se divide en bloques de 400ms con 75% de solapamiento (hop de 100ms). Para un track de 3 minutos, se calculan ~1800 bloques. Se calcula la potencia media (mean square) de cada bloque.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Gating absoluto</h4>
+        <p>Se descartan todos los bloques con loudness inferior a −70 LUFS. Esto elimina los silencios iniciales y finales del track, que de otro modo bajarían artificialmente la medida.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Gating relativo</h4>
+        <p>De los bloques restantes, se calcula la media y se descartan los que estén 10 LU por debajo de esa media. Elimina intros/outros silenciosas. El promedio final de los bloques supervivientes es el LUFS-I.</p>
+      </div>
+    </div>
+  </div>
+  <table class="lufs-table">
+    <tr><th>Plataforma</th><th>Target LUFS-I</th><th>Qué ocurre si superas el target</th></tr>
+    <tr><td>Spotify</td><td>−14 LUFS</td><td>Reduce el volumen de reproducción automáticamente</td></tr>
+    <tr><td>Apple Music</td><td>−16 LUFS</td><td>Reduce el volumen de reproducción automáticamente</td></tr>
+    <tr><td>YouTube</td><td>−14 LUFS</td><td>Reduce el volumen de reproducción automáticamente</td></tr>
+    <tr><td>Tidal</td><td>−14 LUFS</td><td>Reduce el volumen de reproducción automáticamente</td></tr>
+    <tr><td>Amazon Music</td><td>−14 LUFS</td><td>Reduce el volumen de reproducción automáticamente</td></tr>
+  </table>
+  <div class="tip"><strong>Estrategia recomendada:</strong> masteriza a −14 LUFS para Spotify/YouTube. Apple Music normalizará 2 LU hacia abajo (-16 LUFS), lo que es aceptable. Si masterizas a −16 LUFS para Apple, Spotify subirá tu track 2 LU, lo cual es fine pero querrás asegurarte de que el True Peak aguanta esa subida.</div>
+  <div class="tip warn"><strong>Más fuerte ≠ mejor.</strong> Masterizar a −8 LUFS no hace que suene más fuerte en Spotify — simplemente lo bajarán 6 LU al reproducirlo. Solo consigues un master más comprimido y con menos dinámica sin ningún beneficio en las plataformas.</div>
+
+  <h2 id="truepeak">True Peak</h2>
+  <p>El <strong>True Peak</strong> (pico verdadero) mide el nivel máximo que alcanzará la señal <em>entre muestras</em> — los picos que no aparecen en el archivo digital pero que sí existen en la señal analógica reconstruida.</p>
+  <h3>¿Por qué importa?</h3>
+  <p>Un archivo WAV puede tener una muestra máxima de −0.1 dBFS (aparentemente seguro), pero al recodificarlo a MP3 o AAC, el proceso de codificación introduce <strong>inter-sample peaks</strong> que pueden superar 0 dBFS y clipear. Plataformas como Spotify aceptan archivos con True Peak hasta −1 dBTP.</p>
+  <h3>Cómo se calcula</h3>
+  <p>La app usa <strong>interpolación cúbica de Catmull-Rom a 4×</strong>: para cada par de muestras consecutivas, evalúa el polinomio cúbico en t=0.25, 0.5 y 0.75, obteniendo 3 puntos adicionales entre muestras. El máximo de todos estos puntos es el True Peak.</p>
+  <div class="tip good"><strong>Regla de entrega:</strong> True Peak ≤ −1.0 dBTP para cualquier plataforma de streaming. Si el indicador muestra "⚠ supera −1 dBTP", baja el Output Gain o el Ceiling del limitador hasta que el True Peak sea seguro.</div>
+  <div class="tip warn"><strong>El True Peak solo se calcula sobre el master procesado</strong>, no sobre el original. Aparece en la métrica "→ después" una vez completado el análisis en segundo plano (puede tardar 10-30 segundos para tracks largas).</div>
+
+  <!-- REGLAS -->
+  <h2 id="reglas">Reglas de oro</h2>
+  <div class="rules">
+    <div class="rule">
+      <div class="rule-title">🔇 Menos es más</div>
+      <div class="rule-text">Un buen master no se nota. Si estás haciendo cambios de ±6 dB o más en todos los módulos, algo está fallando en la mezcla, no en la masterización.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-title">🎵 Usa una reference track</div>
+      <div class="rule-text">Busca en Spotify la canción comercial que más se parezca a lo que quieres conseguir. Tenla en mente mientras ajustas. Si tu master suena "igual de bien" que esa referencia, has terminado.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-title">👂 Descansa el oído</div>
+      <div class="rule-text">Después de 30–45 minutos escuchando en detalle, el oído se cansa y toma malas decisiones. Haz una pausa, escucha otra música, y vuelve. Los problemas se hacen evidentes con oídos frescos.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-title">🔊 Comprueba en varios sistemas</div>
+      <div class="rule-text">Escucha el export en cascos, altavoces, el altavoz del móvil y el coche. Un buen master suena bien en todos. Si algo molesta solo en un sistema, es una pista de qué necesita ajuste.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-title">📊 Confía en el A/B, no en el espectro</div>
+      <div class="rule-text">El espectro es una herramienta diagnóstica, no el objetivo final. Tu master debe sonar bien, no verse bien en el gráfico. A veces un espectro "imperfecto" suena perfecto.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-title">🎚️ El orden de la cadena no es negociable</div>
+      <div class="rule-text">HPF primero, limitador último. Siempre. La lógica del orden — limpiar, saturar, comprimir, colorear, expandir, limitar — es la misma en todos los estudios profesionales del mundo.</div>
+    </div>
+  </div>
+
+</main>
+</div>
+</body>
+</html>
