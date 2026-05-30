@@ -191,6 +191,7 @@ const FADE_S=0.055;
 let vuPeakL=-Infinity,vuPeakR=-Infinity,vuPeakLt=0,vuPeakRt=0;
 const VU_PEAK_HOLD=2000;
 let loopDrag=null; // {handle:'start'|'end'}
+let _vuBufL=null,_vuBufR=null; // hoisted para evitar alloc a 60fps
 
 function applyLoopToSources(){
   const lp=state.settings.loop, dur=state.origBuf?.duration||1;
@@ -466,7 +467,7 @@ function buildUI(){if(state.phase==='upload')return buildUpload();if(state.phase
 
 function buildUpload(){return`<div class="card"><div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn-help" onclick="window.open('help.html','_blank')">? Ayuda</button></div><div class="dropzone" id="dz"><div class="dz-icon">🎵</div><div class="dz-title">Arrastra tu mezcla aquí</div><div class="dz-sub">o haz clic para seleccionar</div><div class="dz-types">MP3 · WAV · FLAC · AAC · OGG · M4A</div></div></div><input type="file" id="fileInput" accept="audio/*" style="display:none">`;}
 
-function buildLoading(){return`<div class="card loading"><div class="loading-icon anim-pulse">🔬</div><div class="loading-title">Analizando y calculando settings…</div><div class="loading-sub">${state.fileName}</div><div class="pbar"><div class="pfill"></div></div></div>`;}
+function buildLoading(){return`<div class="card loading"><div class="loading-icon anim-pulse">🔬</div><div class="loading-title">Analizando y calculando settings…</div><div class="loading-sub">${esc(state.fileName)}</div><div class="pbar"><div class="pfill"></div></div></div>`;}
 
 function buildMain(){return`${buildFileBar()}${buildAnalysisCard()}${buildChainViz()}<div class="card"><div class="section-title"><span class="section-title-text">CADENA DE MÓDULOS — controles en tiempo real</span></div>${MODULES_META.map(m=>buildModule(m)).join('')}</div>${buildLiveSpectrumCard()}${buildWaveformCard()}${buildActions()}`;}
 
@@ -722,10 +723,10 @@ function getEQBands(moduleId){
   } else {
     return{
       bands:[
-        {freq:s.eqAdd.lowFreq||120,  gain:s.eqAdd.low,  q:0.707},
-        {freq:s.eqAdd.midFreq||1000, gain:s.eqAdd.mid,  q:0.7},
-        {freq:s.eqAdd.highFreq||8000,gain:s.eqAdd.high, q:0.8},
-        {freq:s.eqAdd.airFreq||16000,gain:s.eqAdd.air,  q:0.707},
+        {freq:s.eqAdd.lowFreq??120,  gain:s.eqAdd.low,  q:1.0},
+        {freq:s.eqAdd.midFreq??1000, gain:s.eqAdd.mid,  q:0.7},
+        {freq:s.eqAdd.highFreq??8000,gain:s.eqAdd.high, q:0.8},
+        {freq:s.eqAdd.airFreq??16000,gain:s.eqAdd.air,  q:1.0},
       ],
       types: ['lowshelf','peaking','peaking','highshelf'],
       colors:['#3090ff','#40c0ff','#40e0ff','#80f0ff'],
@@ -1333,9 +1334,7 @@ function drawWaveform(){
     ctx.lineTo(x,y);
   }
   ctx.closePath();
-  const grad=ctx.createLinearGradient(0,PAD.T,0,H-PAD.B);
-  grad.addColorStop(0,modeColorDim); grad.addColorStop(0.5,modeColorDim); grad.addColorStop(1,modeColorDim);
-  ctx.fillStyle=grad; ctx.fill();
+  ctx.fillStyle=modeColorDim; ctx.fill();
 
   // Contorno superior
   ctx.strokeStyle=modeColor+'80'; ctx.lineWidth=1; ctx.setLineDash([]);
@@ -1432,7 +1431,9 @@ function drawVUMeter(){
   const aL=liveChain?.analyserL, aR=liveChain?.analyserR;
   let rmsL=-Infinity, rmsR=-Infinity, peakSampleL=-Infinity, peakSampleR=-Infinity;
   if(aL&&aR){
-    const tdL=new Float32Array(aL.fftSize), tdR=new Float32Array(aR.fftSize);
+    if(!_vuBufL||_vuBufL.length!==aL.fftSize)_vuBufL=new Float32Array(aL.fftSize);
+    if(!_vuBufR||_vuBufR.length!==aR.fftSize)_vuBufR=new Float32Array(aR.fftSize);
+    const tdL=_vuBufL, tdR=_vuBufR;
     aL.getFloatTimeDomainData(tdL); aR.getFloatTimeDomainData(tdR);
     let sL=0,sR=0;
     for(let i=0;i<tdL.length;i++){
@@ -1600,7 +1601,7 @@ function bindEvents(){
     if(disp)disp.textContent=(v>=0?'+':'')+v.toFixed(1)+' dB';
     if(!specAnimId)drawLiveSpectrum();
     if(!waveAnimId)drawVUMeter();
-  });;
+  });
 
   document.querySelectorAll('[data-toggle]').forEach(cb=>{cb.addEventListener('change',e=>{const id=e.target.dataset.toggle;state.settings[id].enabled=e.target.checked;liveUpdate(id+'.enabled');render();});});
   document.querySelectorAll('[data-mid]').forEach(hdr=>{hdr.addEventListener('click',e=>{if(e.target.closest('label')||e.target.closest('[data-help]')||e.target.closest('[data-resetmod]'))return;const id=hdr.dataset.mid;state.openMods.has(id)?state.openMods.delete(id):state.openMods.add(id);render();});});
@@ -1652,7 +1653,36 @@ function resetModule(id){
    PRESETS
 ══════════════════════════════════════ */
 function savePreset(){const preset={version:'2.1',file:state.fileName,date:new Date().toISOString(),settings:deepClone(state.settings)};const blob=new Blob([JSON.stringify(preset,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(state.fileName.replace(/\.[^.]+$/,'')||'master')+'_preset.mpreset';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function loadPreset(file){if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result),loaded=data.settings||data,base=defaultSettings();for(const key of Object.keys(base)){if(loaded[key]===undefined)continue;if(key==='eqSub'&&loaded.eqSub?.bands){base.eqSub={...base.eqSub,...loaded.eqSub};base.eqSub.bands=loaded.eqSub.bands.map((b,i)=>({...base.eqSub.bands[i],...b}));}else if(typeof base[key]==='object'&&!Array.isArray(base[key])){base[key]={...base[key],...loaded[key]};}else base[key]=loaded[key];}state.settings=base;applyAllLiveUpdates();render();}catch(err){alert('Error al cargar preset: '+err.message);}};reader.readAsText(file);}
+function loadPreset(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result),loaded=data.settings||data,base=defaultSettings();
+      for(const key of Object.keys(base)){
+        if(loaded[key]===undefined)continue;
+        if(key==='eqSub'&&loaded.eqSub?.bands){
+          // eqSub tiene array de bandas — merge explícito
+          base.eqSub={...base.eqSub,...loaded.eqSub};
+          base.eqSub.bands=loaded.eqSub.bands.map((b,i)=>({...base.eqSub.bands[i],...b}));
+        } else if(key==='eqAdd'&&typeof loaded.eqAdd==='object'){
+          // eqAdd es plano: solo copiar claves que existan en base para no contaminar
+          for(const k of Object.keys(base.eqAdd)){
+            if(loaded.eqAdd[k]!==undefined)base.eqAdd[k]=loaded.eqAdd[k];
+          }
+        } else if(typeof base[key]==='object'&&!Array.isArray(base[key])){
+          base[key]={...base[key],...loaded[key]};
+        } else {
+          base[key]=loaded[key];
+        }
+      }
+      state.settings=base;
+      applyAllLiveUpdates();
+      render();
+    }catch(err){alert('Error al cargar preset: '+err.message);}
+  };
+  reader.readAsText(file);
+}
 
 /* ══════════════════════════════════════
    ACTIONS
@@ -1710,7 +1740,31 @@ function doPlayOriginal(){
   state.isPlaying=true;state.playMode='orig';
   render();startWaveformAnim();
 }
-async function doExport(){if(!state.origBuf)return;const prevPos=getCurrentPos(),prevMode=state.playMode,prevPlaying=state.isPlaying;const btn=document.getElementById('btnExport');if(btn){btn.textContent='⏳ Exportando…';btn.disabled=true;}try{const out=await processAudio(state.origBuf,state.settings);const blob=new Blob([toWav(out)],{type:'audio/wav'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=state.fileName.replace(/\.[^.]+$/,'')+'_mastered.wav';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);const fd=await analyzeSpectrum(out);const bands=FREQ_BANDS.map(b=>{const val=getBandPower(fd,b.min,b.max,8192,out.sampleRate);return{...b,value:val,diff:val-b.target};});state.procAnalysis={bands,lufs:calcRMS(out),dr:calcDR(out),correlation:calcCorr(out)};}catch(e){alert('Error al exportar: '+e.message);}render();if(prevPlaying){if(prevMode==='proc'){buildLiveChain(state.origBuf,state.settings,prevPos);state.isPlaying=true;state.playMode='proc';render();}else if(prevMode==='orig')doPlayOriginal();}}
+async function doExport(){
+  if(!state.origBuf)return;
+  const prevPos=getCurrentPos(),prevMode=state.playMode,prevPlaying=state.isPlaying;
+  const btn=document.getElementById('btnExport');
+  if(btn){btn.textContent='⏳ Exportando…';btn.disabled=true;}
+  try{
+    const bd=parseInt(document.getElementById('bitDepth')?.value||'24');
+    const out=await processAudio(state.origBuf,state.settings);
+    const blob=new Blob([toWav(out,bd)],{type:'audio/wav'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=state.fileName.replace(/\.[^.]+$/,'')+'_mastered.wav';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    const fd=await analyzeSpectrum(out);
+    const bands=FREQ_BANDS.map(b=>{const val=getBandPower(fd,b.min,b.max,8192,out.sampleRate);return{...b,value:val,diff:val-b.target};});
+    state.procAnalysis={bands,lufs:calcLUFS(out),dr:calcDR(out),correlation:calcCorr(out),truePeak:calcTruePeak(out)};
+  }catch(e){alert('Error al exportar: '+e.message);}
+  if(prevPlaying){
+    if(prevMode==='proc'){buildLiveChain(state.origBuf,state.settings,prevPos);state.isPlaying=true;state.playMode='proc';}
+    else if(prevMode==='orig')doPlayOriginal();
+  }
+  render();
+}
 
 render();
 

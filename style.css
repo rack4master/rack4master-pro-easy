@@ -90,8 +90,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',syste
 .mod-body{padding:0 14px 14px;display:none}
 .mod-body.open{display:block}
 .mod-desc{font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.6}
-.band-sep{border:none;border-top:1px solid var(--border);margin:8px 0}
-.band-title{font-size:13px;font-weight:bold;letter-spacing:1px;margin:8px 0 6px}
+
 
 /* Slider */
 .slider-row{margin-bottom:11px}
