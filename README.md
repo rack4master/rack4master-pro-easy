@@ -1,14 +1,5 @@
 # Rack4Master Pro Easy — AI Mastering Engine
 
-**Masterización profesional en el navegador**  
-Carga tu mezcla, obtén un análisis espectral completo y aplica una cadena de procesado en tiempo real con control total sobre cada módulo. Sin instalaciones, sin suscripciones.
-
-![Análisis espectral](pic1.png)
-*Vista del análisis de bandas, LUFS‑I, True Peak y comparación antes/después.*
-
-![Cadena de masterización](pic2.png)
-*Interfaz principal con la cadena de módulos, analizador en tiempo real y línea de tiempo navegable.*
-
 ## ✨ Características principales
 
 - **Cadena profesional fija** (HPF → EQ Correctiva → Saturación → Bus Comp → EQ Tonal → Stereo Width → Limiter → Output Gain).
