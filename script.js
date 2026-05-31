@@ -522,10 +522,12 @@ function toWav(buf, bitDepth=24){
   const chs=Array.from({length:nc},(_,ch)=>buf.getChannelData(ch));
   let off=44;
   if(bitDepth===24){
-    // 24-bit: rango ±8388607 — NO se aplica dithering (headroom suficiente en 24-bit)
+    // 24-bit: TPDF dithering ±1 LSB (1/8388608 ≈ −138 dBFS)
+    // Blanquea el ruido de cuantización en decaimientos y silencios profundos
     for(let i=0;i<len;i++){
       for(let ch=0;ch<nc;ch++){
-        const s=Math.max(-1,Math.min(1,chs[ch][i]));
+        const dither=(Math.random()-Math.random())/8388608; // triangular ±1 LSB
+        const s=Math.max(-1,Math.min(1,chs[ch][i]+dither));
         const smp=Math.round(s*8388607); // 2^23 − 1
         // Little-endian 3 bytes (two's complement)
         v.setUint8(off,smp&0xFF);
@@ -701,7 +703,7 @@ function buildModBody(id){
     case'width':
       return `${sl('width.amount','Amplitud M/S',s.amount,.5,2,.05,'')}<div style="font-size:12px;color:var(--muted);margin-top:5px">1.0 = original · &lt;1.0 mono · &gt;1.0 más ancho</div>`;
     case'lim':
-      return `${sl('lim.ceiling','Ceiling (techo)',s.ceiling,-6,-.1,.1,'dBFS')}<div style="font-size:12px;color:var(--muted);margin-top:5px">-1.0 dBFS recomendado para Spotify / Apple Music</div>`;
+      return `${sl('lim.ceiling','Ceiling (techo)',s.ceiling,-6,-.1,.1,'dBFS')}<div style="font-size:12px;color:var(--muted);margin-top:5px">-1.0 dBFS recomendado para Spotify / Apple Music · TPDF dithering aplicado en 24-bit y 16-bit</div>`;
     default:
       return '';
   }
