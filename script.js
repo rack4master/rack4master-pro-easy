@@ -76,6 +76,25 @@ function kWeightingCoeffs(SR){
   const rlb={b0:1/db, b1:-2/db, b2:1/db, a1:2*(Kb*Kb-1)/db, a2:(1-Kb/Q0b+Kb*Kb)/db};
   return{pre,rlb};
 }
+// Calcula LUFS momentáneo (ventana ~185ms) sin allocations — para VU meter en tiempo real
+function calcLufsMomentary(tdL,tdR,coeffs){
+  const{pre,rlb}=coeffs,n=tdL.length;
+  let ms=0;
+  for(let ch=0;ch<2;ch++){
+    const s=ch===0?tdL:tdR;
+    const{b0:bp,b1:b1p,b2:b2p,a1:a1p,a2:a2p}=pre;
+    const{b0:br,b1:b1r,b2:b2r,a1:a1r,a2:a2r}=rlb;
+    let x1=0,x2=0,y1=0,y2=0,x1r=0,x2r=0,y1r=0,y2r=0;
+    for(let i=0;i<n;i++){
+      const x0=s[i];
+      const yp=bp*x0+b1p*x1+b2p*x2-a1p*y1-a2p*y2; x2=x1;x1=x0;y2=y1;y1=yp;
+      const yr=br*yp+b1r*x1r+b2r*x2r-a1r*y1r-a2r*y2r; x2r=x1r;x1r=yp;y2r=y1r;y1r=yr;
+      ms+=yr*yr;
+    }
+  }
+  ms/=(n*2);
+  return ms>1e-12?-0.691+10*Math.log10(ms):null;
+}
 function calcLUFS(buf){
   const SR=buf.sampleRate,nc=Math.min(buf.numberOfChannels,2);
   const{pre,rlb}=kWeightingCoeffs(SR);
@@ -254,6 +273,7 @@ function autoSettings(analysis){
 ══════════════════════════════════════ */
 let liveChain=null,rawSrc=null,rawGain=null,rawStart=0,rawOffset=0;
 let specAnimId=null,liveFreqData=null,liveSpecDrag=null,waveAnimId=null;
+let _kwCoeffs=null; // K-weighting coefficients para LUFS-M en tiempo real
 const FADE_S=0.055;
 let vuPeakL=-Infinity,vuPeakR=-Infinity,vuPeakLt=0,vuPeakRt=0;
 const VU_PEAK_HOLD=2000;
@@ -316,6 +336,7 @@ function getCurrentPos(){
 function buildLiveChain(audioBuffer,settings,offset=0){
   destroyLiveChain();
   const ctx=resumeCtx(),ch={},s=settings;
+  _kwCoeffs=kWeightingCoeffs(ctx.sampleRate); // para LUFS-M en tiempo real
   const srcBuf=ctx.createBuffer(2,audioBuffer.length,audioBuffer.sampleRate);
   srcBuf.copyToChannel(audioBuffer.getChannelData(0),0);
   srcBuf.copyToChannel(audioBuffer.numberOfChannels>1?audioBuffer.getChannelData(1):audioBuffer.getChannelData(0),1);
@@ -774,7 +795,8 @@ function getIssues(){
   // Rango dinámico — reflejar lo que la app ya corrigió
   if(a.dr<3)  r.push({t:'warn',m:`DR muy bajo (${a.dr.toFixed(1)} dB) → compresor y saturación desactivados automáticamente para no empeorar`});
   else if(a.dr<5) r.push({t:'info',m:`DR bajo (${a.dr.toFixed(1)} dB) → compresor suavizado a ratio ${s.comp.ratio.toFixed(1)}:1 para preservar la dinámica`});
-  // True Peak del original
+  // Clipping en el original
+  if(a.clipped>10) r.push({t:'warn',m:`Clipping detectado en el original (${a.clipped} muestras) — masterizar no restaura señal recortada`});
   if(a.truePeak!=null&&a.truePeak>-2) r.push({t:'info',m:`True Peak original alto (${a.truePeak.toFixed(1)} dBTP) → ceiling del limiter ajustado a ${s.lim.ceiling.toFixed(1)} dBFS`});
   // Estéreo
   if(a.correlation>.93) r.push({t:'info',m:'Audio casi mono → stereo width ampliará el campo lateral'});
@@ -1375,7 +1397,8 @@ function buildWaveformCard(){
       <div id="outGainVal" style="font-size:11px;font-family:monospace;font-weight:bold;color:var(--yellow);text-align:center;letter-spacing:.5px">${gainStr}</div>
       <input type="range" id="outGainSlider" min="-12" max="6" step="0.1" value="${gain}"
         style="width:100%;height:4px;accent-color:var(--yellow);cursor:pointer;margin:2px 0">
-      <canvas id="vu-meter" style="width:100%;height:62px;display:block;border-radius:6px;border:1px solid var(--border)"></canvas>
+      <canvas id="vu-meter" style="width:100%;height:82px;display:block;border-radius:6px;border:1px solid var(--border)"></canvas>
+      <div id="lufsm-readout" style="font-size:10px;font-family:monospace;font-weight:bold;text-align:center;margin-top:3px;letter-spacing:.5px;color:var(--muted)">LUFS-M —</div>
     </div>
 
   </div>
@@ -1531,13 +1554,13 @@ function drawWaveform(){
 function drawVUMeter(){
   const canvas=document.getElementById('vu-meter'); if(!canvas)return;
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  const W=canvas.offsetWidth||88, H=canvas.offsetHeight||62;
+  const W=canvas.offsetWidth||88, H=canvas.offsetHeight||82;
   canvas.width=W*dpr; canvas.height=H*dpr;
   const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
   ctx.fillStyle='#060614'; ctx.fillRect(0,0,W,H);
 
   const DB_MIN=-36, DB_MAX=0;
-  const PAD={T:4,B:4,L:4,R:4};
+  const PAD={T:18,B:4,L:4,R:4}; // T más grande para los números de peak
   const chartH=H-PAD.T-PAD.B;
   const toY=db=>PAD.T+chartH*(1-(Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN));
 
@@ -1561,6 +1584,20 @@ function drawVUMeter(){
     rmsR=rr>1e-9?20*Math.log10(rr):-90;
     peakSampleL=peakSampleL>1e-9?20*Math.log10(peakSampleL):-90;
     peakSampleR=peakSampleR>1e-9?20*Math.log10(peakSampleR):-90;
+
+    // LUFS-M en tiempo real (K-weighting sobre el frame actual)
+    if(_kwCoeffs){
+      const lm=calcLufsMomentary(tdL,tdR,_kwCoeffs);
+      const el=document.getElementById('lufsm-readout');
+      if(el){
+        if(lm!==null){
+          const lmR=Math.round(lm*10)/10;
+          const col=lmR>=-16?lmR>=-9?'var(--orange)':'var(--green)':'var(--muted)';
+          el.style.color=col;
+          el.textContent=`${lmR.toFixed(1)} LUFS-M`;
+        } else { el.style.color='var(--muted)'; el.textContent='LUFS-M —'; }
+      }
+    }
   }
 
   // Peak hold con 2s de retención
@@ -1573,15 +1610,15 @@ function drawVUMeter(){
   const barW=Math.floor((innerW-8)/2);
   const xL=PAD.L, xR=PAD.L+barW+8;
 
-  // Gradiente de color (mismo para ambas barras, de arriba→rojo a abajo→verde)
+  // Gradiente de color
   const grad=ctx.createLinearGradient(0,PAD.T,0,H-PAD.B);
-  grad.addColorStop(0,'#ff4444');          // 0 dBFS
-  grad.addColorStop(3/36,'#ffa94d');       // -3 dBFS
-  grad.addColorStop(6/36,'#ffd43b');       // -6 dBFS
-  grad.addColorStop(14/36,'#69db7c');      // -14 dBFS (target Spotify)
-  grad.addColorStop(1,'#1e5c30');          // -36 dBFS
+  grad.addColorStop(0,'#ff4444');
+  grad.addColorStop(3/36,'#ffa94d');
+  grad.addColorStop(6/36,'#ffd43b');
+  grad.addColorStop(14/36,'#69db7c');
+  grad.addColorStop(1,'#1e5c30');
 
-  [[rmsL,vuPeakL,xL],[rmsR,vuPeakR,xR]].forEach(([rms,peak,x])=>{
+  [[rmsL,vuPeakL,peakSampleL,xL,'L'],[rmsR,vuPeakR,peakSampleR,xR,'R']].forEach(([rms,peak,peakNow,x,lbl])=>{
     // Fondo de pista
     ctx.fillStyle='#0c0c20'; ctx.fillRect(x,PAD.T,barW,chartH);
     // Barra de nivel RMS
@@ -1589,22 +1626,34 @@ function drawVUMeter(){
       const barTop=toY(rms), barH=H-PAD.B-barTop;
       ctx.fillStyle=grad; ctx.fillRect(x,barTop,barW,barH);
     }
-    // Línea de peak hold (tick blanco)
+    // Línea de peak hold (tick)
     if(peak>DB_MIN&&peak>rms){
       const py=toY(peak);
       const peakColor=peak>-3?'#ff4444':peak>-6?'#ffd43b':'#69db7c';
       ctx.fillStyle=peakColor; ctx.fillRect(x,py-1,barW,2);
     }
+    // Número de peak encima de la barra
+    const dispPeak=peak>DB_MIN?peak:peakNow;
+    if(dispPeak>DB_MIN){
+      const numCol=dispPeak>-3?'#ff4444':dispPeak>-6?'#ffd43b':'#88c888';
+      ctx.fillStyle=numCol;
+      ctx.font=`bold 9px monospace`;
+      ctx.textAlign='center';
+      ctx.fillText(dispPeak.toFixed(1),x+barW/2,PAD.T-5);
+    }
+    // Etiqueta canal
+    ctx.fillStyle='#5060a0'; ctx.font='bold 8px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(lbl,x+barW/2,H-PAD.B+1);
   });
 
-  // Marcas de referencia: -6, -12, -18, -36 dBFS
+  // Marcas de referencia
   [-6,-12,-18,-36].forEach(db=>{
     const y=toY(db);
     ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1; ctx.setLineDash([1,2]);
     ctx.beginPath(); ctx.moveTo(PAD.L,y); ctx.lineTo(W-PAD.R,y); ctx.stroke();
     ctx.setLineDash([]);
   });
-  // Línea roja de 0 dBFS
+  // Línea roja 0 dBFS
   const y0=toY(0);
   ctx.strokeStyle='rgba(255,68,68,0.35)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(PAD.L,y0); ctx.lineTo(W-PAD.R,y0); ctx.stroke();
@@ -1844,6 +1893,13 @@ async function doLoad(file){
     const freqData=await analyzeSpectrum(decoded);
     const bands=FREQ_BANDS.map(b=>{const val=getBandPower(freqData,b.min,b.max,8192,decoded.sampleRate);return{...b,value:val,diff:val-b.target};});
     state.analysis={bands,lufs:calcLUFS(decoded),rms:calcRMS(decoded),dr:calcDR(decoded),correlation:calcCorr(decoded),truePeak:calcTruePeak(decoded)};
+    // Detectar clipping digital en la mezcla original
+    let clipped=0;
+    for(let ch=0;ch<Math.min(decoded.numberOfChannels,2);ch++){
+      const d=decoded.getChannelData(ch);
+      for(let i=0;i<d.length;i++)if(Math.abs(d[i])>=0.9999)clipped++;
+    }
+    state.analysis.clipped=clipped;
     state.initialSettings=autoSettings(state.analysis);
     state.settings=deepClone(state.initialSettings);
     state.abSlot='A'; state.settingsA=deepClone(state.settings); state.settingsB=null;
@@ -1854,7 +1910,7 @@ async function doLoad(file){
       const bands2=FREQ_BANDS.map(b=>{const val=getBandPower(fd2,b.min,b.max,8192,procBuf.sampleRate);return{...b,value:val,diff:val-b.target};});
       const tp2=calcTruePeak(procBuf);
       state.procAnalysis={bands:bands2,lufs:calcLUFS(procBuf),rms:calcRMS(procBuf),dr:calcDR(procBuf),correlation:calcCorr(procBuf),truePeak:tp2};
-      // Segunda pasada: si el TP del master supera -1 dBTP, bajar ceiling y re-sincronizar slots A/B
+      // Segunda pasada: True Peak — bajar ceiling si supera -1 dBTP
       if(tp2>-1.0){
         const excess=tp2-(-1.0);
         const newCeiling=Math.max(-3.0,Math.round((state.settings.lim.ceiling-excess-0.2)*10)/10);
@@ -1863,6 +1919,20 @@ async function doLoad(file){
           state.initialSettings.lim.ceiling=newCeiling;
           state.settingsA=deepClone(state.settings);
           if(liveChain)liveUpdate('lim.ceiling');
+        }
+      }
+      // Calibración de Makeup Gain: ajustar si el LUFS de salida se aleja más de 1 LU de -14
+      if(state.settings.comp.enabled){
+        const lufsGap=-14-state.procAnalysis.lufs; // LU que faltan (negativo = demasiado alto)
+        if(Math.abs(lufsGap)>1.0){
+          const adj=Math.max(-4,Math.min(4,lufsGap*0.8)); // corrección 80% conservadora
+          const newMakeup=parseFloat(Math.max(0,Math.min(10,state.settings.comp.makeup+adj)).toFixed(1));
+          if(newMakeup!==state.settings.comp.makeup){
+            state.settings.comp.makeup=newMakeup;
+            state.initialSettings.comp.makeup=newMakeup;
+            state.settingsA=deepClone(state.settings);
+            if(liveChain)liveUpdate('comp.makeup');
+          }
         }
       }
       render();
