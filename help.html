@@ -205,11 +205,8 @@ em{color:var(--orange);font-style:normal}
   .legend-title{color:#1a1a2e;font-size:10.5pt}
   .legend-desc{color:#333350}
 
-  /* Footer de página */
   @page{margin:18mm 16mm 18mm;size:A4}
   @page :first{margin-top:12mm}
-
-  /* Ocultar elementos no imprimibles */
   .no-print{display:none !important}
 }
 </style>
@@ -266,6 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="nav-section">CONTROLES</div>
   <a class="nav-link" href="#ab">Comparación A/B</a>
   <a class="nav-link" href="#loop">Loop / Bucle</a>
+  <a class="nav-link" href="#reset">Reset de módulos</a>
   <a class="nav-link" href="#presets">Presets</a>
   <a class="nav-link" href="#export">Exportación</a>
 
@@ -287,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <div class="print-header" style="display:none">
     <div class="print-header-title">AI Mastering Engine — Guía completa de uso</div>
-    <div class="print-header-sub">Documentación v3.0 · Referencia de sliders, visualizaciones, loop, LUFS y True Peak</div>
+    <div class="print-header-sub">Documentación v3.1 · EQ Correctiva 4 bandas · EQ Tonal 7 bandas · Auto-correcciones TP/DR · Comparación A/B de variantes</div>
   </div>
   <h1>AI Mastering Engine</h1>
   <p class="page-sub">Guía completa de uso · Cadena de masterización profesional pop-rock en el navegador</p>
@@ -345,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- ═══════════════════════════════ ANÁLISIS -->
   <h2 id="analisis">El análisis espectral</h2>
-  <p>El gráfico muestra el nivel promedio de energía de tu mezcla dividido en 7 bandas de frecuencia. Es una <strong>fotografía estática</strong> del contenido espectral de los primeros ~30% de la canción, no un medidor en tiempo real.</p>
+  <p>El gráfico muestra el nivel promedio de energía de tu mezcla dividido en 7 bandas de frecuencia. Es una <strong>fotografía representativa</strong> del contenido espectral calculada como promedio de <strong>15 snapshots FFT distribuidos uniformemente por los primeros 40 segundos</strong> de la canción — no un único instante, sino una media ponderada del comportamiento espectral real del track.</p>
 
   <div class="spectrum-legend">
     <div class="legend-item">
@@ -391,9 +389,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <tr><td class="slider-name">True Peak</td><td>Pico inter-muestral calculado con interpolación cúbica 4× (estándar ITU). Detecta clips que solo aparecen al recodificar a MP3/AAC, invisibles en el WAV.</td><td class="slider-range">≤ −1.0 dBTP</td></tr>
     <tr><td class="slider-name">Rang. Din.</td><td>Diferencia entre los niveles más altos y más bajos (estimación DR). Valores bajos = masters muy comprimidos.</td><td class="slider-range">7–14 dB</td></tr>
     <tr><td class="slider-name">Correlac.</td><td>Fase estéreo. +1 = mono perfecto. 0 = sin correlación. Negativo = problemas de fase.</td><td class="slider-range">0.5–0.95</td></tr>
-    <tr><td class="slider-name">Duración</td><td>Duración del archivo y frecuencia de muestreo original.</td><td>—</td></tr>
+    <tr><td class="slider-name">Duración</td><td>Duración del archivo y frecuencia de muestreo original.</td><td class="slider-range">—</td></tr>
   </table>
-  <div class="tip warn"><strong>True Peak solo se calcula sobre el master procesado</strong>, no sobre el original. Aparece en la columna "→ después" una vez completado el análisis en segundo plano (5–30 segundos según duración).</div>
+  <div class="tip warn"><strong>True Peak en original y master:</strong> el True Peak se calcula sobre <em>ambos</em> — el original al cargar el archivo, y el master procesado en segundo plano. Si el True Peak del original era alto, el auto-análisis ya habrá ajustado el Ceiling del limitador de forma conservadora. Si el resultado sigue superando −1 dBTP, baja el Output Gain.</div>
   <p>Los módulos se procesan <strong>en orden fijo de izquierda a derecha</strong>. Cada etapa prepara la señal para la siguiente. No puedes cambiar el orden y no deberías querer hacerlo: el orden es la receta.</p>
   <div class="chain">
     <span class="chain-label">IN</span>
@@ -416,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <span class="chain-arrow">→</span>
     <span class="chain-label">OUT</span>
   </div>
+  <div class="tip"><strong>Nodos clickeables:</strong> haz clic en cualquier nombre de módulo de la cadena visual para abrir/cerrar ese módulo y hacer scroll hasta él. Los nodos iluminados = módulo activo; escala ligera = módulo abierto.</div>
 
   <!-- HPF -->
   <div class="mod-header" style="--mc:#ff6b6b">
@@ -426,27 +425,28 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
   <p>Corta todas las frecuencias por debajo de su frecuencia de corte. El contenido sub-sónico es <strong>inaudible pero destructivo</strong>: consume headroom del limitador y hace que el compresor bombee reaccionando a energía que no escuchas. Eliminarlo libera espacio dinámico real.</p>
+  <p>La frecuencia de corte se <strong>auto-ajusta según el análisis espectral</strong>: si la banda Sub de tu mezcla tiene exceso relativo, la app sube automáticamente el HPF (hasta 55 Hz); si el Sub está equilibrado, lo mantiene en 22 Hz por defecto.</p>
   <table class="slider-table">
     <tr><th>Slider</th><th>Rango</th><th>Dirección</th><th>Cómo usarlo</th></tr>
     <tr>
       <td class="slider-name">Frecuencia de corte</td>
       <td class="slider-range">15–80 Hz</td>
       <td><span class="up">↑ Sube</span> para cortar más graves<br><span class="down">↓ Baja</span> para conservar más graves</td>
-      <td>Déjalo en <em>20-22 Hz</em> para música completa. Sube a <em>30-40 Hz</em> si la mezcla tiene exceso de rumble o ruido de sala. Nunca superes 80 Hz o perderás cuerpo en el bajo.</td>
+      <td>El auto-análisis lo fija en <em>22–55 Hz</em> según el contenido sub. Ajusta manualmente si notas que tu bajo pierde cuerpo (baja el corte) o que la mezcla sigue embarrada en los graves (súbelo hasta 40–60 Hz). Nunca superes 80 Hz o perderás cuerpo en el bajo.</td>
     </tr>
   </table>
-  <div class="tip" style="--mc:#ff6b6b"><strong>Regla:</strong> Siempre activo. Ninguna mezcla profesional llega a masterización sin HPF entre 20-30 Hz.</div>
+  <div class="tip" style="--mc:#ff6b6b"><strong>Regla:</strong> siempre activo. El análisis auto-ajusta el punto de corte, pero revísalo si usas instrumentos con mucho contenido sub (bajos de 5 cuerdas, bombo muy profundo, sintetizadores sub).</div>
 
   <!-- EQ CORRECTIVA -->
   <div class="mod-header" style="--mc:#ffa94d">
     <div>
       <div class="mod-number">MÓDULO 2</div>
       <div class="mod-title">EQ Correctiva (Sustractiva)</div>
-      <div class="mod-subtitle">Tres filtros peak para eliminar resonancias y problemas</div>
+      <div class="mod-subtitle">Cuatro filtros peak para eliminar resonancias en la zona de mud (200–1000 Hz)</div>
     </div>
   </div>
   <p>Su misión es <strong>quitar lo que sobra</strong>, antes de que el compresor lo amplifique. El compresor no distingue entre una resonancia molesta y contenido musical útil: si hay un pico a 300 Hz, el compresor lo aplastará todo junto. Recortar primero hace que el compresor trabaje solo sobre dinámica musical.</p>
-  <p>Tiene 3 bandas independientes, cada una con 3 parámetros:</p>
+  <p>Tiene <strong>4 bandas independientes</strong> centradas en la zona de mud (200–1000 Hz), cada una con frecuencia arrastrable, ganancia y Q ajustables. El auto-análisis ya fija las ganancias según el exceso relativo detectado en cada zona:</p>
   <table class="slider-table">
     <tr><th>Slider</th><th>Rango típico</th><th>Dirección</th><th>Cómo usarlo</th></tr>
     <tr>
@@ -457,9 +457,9 @@ document.addEventListener('DOMContentLoaded', function() {
     </tr>
     <tr>
       <td class="slider-name">Frecuencia</td>
-      <td class="slider-range">80–4000 Hz</td>
+      <td class="slider-range">50–6000 Hz</td>
       <td><span class="neutral">↔ Barre para encontrar</span></td>
-      <td>Muévelo mientras escuchas. Las zonas problemáticas más comunes: <em>200-400 Hz</em> = barro/mud, <em>500-800 Hz</em> = nasalidad, <em>1-2 kHz</em> = dureza/metalismo. Cuando encuentres algo que molesta, fija la frecuencia y corta.</td>
+      <td>Muévelo mientras escuchas. Frecuencias por defecto: <em>200 Hz</em> (cuerpo bajo/bombo), <em>300 Hz</em> (mud clásico), <em>500 Hz</em> (nasalidad), <em>1 kHz</em> (dureza/metalismo). Cuando encuentres algo que molesta, fija la frecuencia y corta. Arrastra los nodos también directamente en el analizador en tiempo real.</td>
     </tr>
     <tr>
       <td class="slider-name">Q (precisión)</td>
@@ -541,45 +541,64 @@ document.addEventListener('DOMContentLoaded', function() {
   </table>
   <div class="tip" style="--mc:#69db7c"><strong>La regla del glue:</strong> 2–4 dB de reducción de ganancia (GR) es suficiente. Si ves más de 6 dB de GR en el compresor, estás comprimiendo demasiado — subirás el umbral o bajarás el ratio.</div>
   <div class="tip warn" style="--mc:#69db7c"><strong>Error frecuente:</strong> usar el Makeup Gain para "hacer sonar más fuerte" en lugar del Limiter. El Makeup Gain es solo compensación. El limitador es quien controla el nivel final.</div>
+  <div class="tip" style="--mc:#69db7c"><strong>Auto-corrección por DR bajo:</strong> si el análisis detecta un rango dinámico inferior a 5 dB (mezcla ya muy comprimida), el auto-análisis reduce el ratio automáticamente a 1.2–1.3:1 o desactiva el módulo. Añadir compresión encima de algo ya muy comprimido solo empeora el resultado.</div>
 
   <!-- EQ TONAL -->
   <div class="mod-header" style="--mc:#4dabf7">
     <div>
       <div class="mod-number">MÓDULO 5</div>
       <div class="mod-title">EQ Tonal (Aditiva)</div>
-      <div class="mod-subtitle">Cuatro filtros amplios para dar carácter al sonido final</div>
+      <div class="mod-subtitle">Siete filtros amplios que cubren todo el espectro — mismo mapa que el análisis</div>
     </div>
   </div>
   <p>Está <strong>después del compresor</strong> a propósito: ecualizas la señal ya comprimida y cohesionada. Aquí ya no corriges problemas (eso fue la EQ Correctiva) — <strong>das carácter</strong>. Piensa en ella como pinturas de color amplio sobre un lienzo ya limpio.</p>
-  <p><em>Diferencia clave con la EQ Correctiva:</em> esta usa filtros amplios (Q bajo), los cambios son en ambas direcciones, y los movimientos típicos son pequeños (+1 a +3 dB). La EQ Correctiva usaba Q alto y solo cortaba.</p>
+  <p>Sus <strong>7 bandas</strong> corresponden exactamente a las 7 zonas del análisis espectral inicial, lo que permite una correspondencia directa: si el análisis muestra exceso en Lo-Mid, el nodo Lo-Mid de esta EQ ya vendrá ajustado automáticamente. Las tres bandas centrales (Lo-Mid, Mid, Hi-Mid) son peaks arrastrables en frecuencia; las cuatro exteriores son shelves fijos.</p>
   <table class="slider-table">
-    <tr><th>Slider</th><th>Frecuencia</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr><th>Banda</th><th>Frecuencia</th><th>Dirección</th><th>Cómo usarlo</th></tr>
+    <tr>
+      <td class="slider-name">Sub</td>
+      <td class="slider-range">40 Hz shelf</td>
+      <td><span class="up">↑ Sube</span> para más físico y peso<br><span class="down">↓ Baja</span> si el sub enturbia</td>
+      <td>Solo se nota en sistemas con subwoofer o buenos monitores. Mueve con precaución: ±1–2 dB como máximo.</td>
+    </tr>
     <tr>
       <td class="slider-name">Low</td>
       <td class="slider-range">120 Hz shelf</td>
       <td><span class="up">↑ Sube</span> para más cuerpo y warmth<br><span class="down">↓ Baja</span> si hay demasiada gravedad</td>
-      <td>Añade cuerpo y calidez. Mueve en pasos de <em>0.5 dB</em>. Más de +3 dB suele sonar empastado. Si subiste el Low en EQ Correctiva, ten cuidado de no doblar el efecto aquí.</td>
+      <td>Añade cuerpo y calidez. Mueve en pasos de <em>0.5 dB</em>. Más de +3 dB suele sonar empastado. Si cortaste en esta zona con la EQ Correctiva, ten cuidado de no deshacer el trabajo.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Lo-Mid</td>
+      <td class="slider-range">350 Hz peak (arrastrable)</td>
+      <td><span class="down">↓ Baja</span> para limpiar barro<br><span class="up">↑ Sube</span> para más cuerpo de guitarras</td>
+      <td>La banda de mud musical. −1 a −2 dB limpia la mezcla sin vaciarla. Es la corrección más reveladora: <em>Lo-Mid −1.5 dB es lo que más diferencia un master amateur de uno profesional</em>. Arrástralo en el analizador para encontrar la resonancia exacta.</td>
     </tr>
     <tr>
       <td class="slider-name">Mid</td>
-      <td class="slider-range">1 kHz peak</td>
+      <td class="slider-range">1 kHz peak (arrastrable)</td>
       <td><span class="up">↑ Sube</span> para más presencia e inteligibilidad<br><span class="down">↓ Baja</span> si la voz o guitarra suenan duras</td>
-      <td>El rango de presencia vocal y de guitarra. Subir +1 a +2 dB hace que la mezcla "corte" mejor en monitores pequeños. Bajar −1 a −2 dB suaviza mezclas que suenan agresivas.</td>
+      <td>El rango de presencia vocal y de guitarra. +1 a +2 dB hace que la mezcla "corte" mejor en monitores pequeños. −1 a −2 dB suaviza mezclas que suenan agresivas o fatigantes.</td>
+    </tr>
+    <tr>
+      <td class="slider-name">Hi-Mid</td>
+      <td class="slider-range">3 kHz peak (arrastrable)</td>
+      <td><span class="up">↑ Sube</span> para más definición y ataque<br><span class="down">↓ Baja</span> si hay dureza o sibilancia</td>
+      <td>Zona de definición e impacto. +1 dB añade claridad y "corte". Ten cuidado: el oído es muy sensible aquí. Con más de +2 dB el resultado puede ser fatiga auditiva. Arrastra el nodo para encontrar el punto exacto de presencia.</td>
     </tr>
     <tr>
       <td class="slider-name">High</td>
-      <td class="slider-range">8 kHz peak</td>
+      <td class="slider-range">8 kHz shelf</td>
       <td><span class="up">↑ Sube</span> para más definición y claridad<br><span class="down">↓ Baja</span> si hay sibilancia o dureza</td>
-      <td>Zona de definición y ataque. +1 a +2 dB añade claridad. Cuidado con la sibilancia vocal — si esta zona ya es problemática en tu mezcla, no la subas aquí.</td>
+      <td>Zona de brillo y ataque de platillos. +1 a +2 dB añade claridad. Cuidado con la sibilancia vocal — si ya es problemática en tu mezcla, no la subas aquí.</td>
     </tr>
     <tr>
       <td class="slider-name">Air</td>
       <td class="slider-range">16 kHz shelf</td>
       <td><span class="up">↑ Sube casi siempre</span><br><span class="down">↓ Baja</span> solo si hay silbidos digitales</td>
-      <td>El ingrediente secreto del sonido profesional moderno. Un boost de <em>+1.5 a +3 dB</em> a 16 kHz abre el espacio encima de la mezcla sin añadir brillantez artificial. Casi todas las mezclas de pop-rock mejoran con este boost. Pruébalo con los ojos cerrados.</td>
+      <td>El ingrediente secreto del sonido profesional moderno. Un boost de <em>+1.5 a +3 dB</em> abre el espacio encima de la mezcla sin añadir brillantez artificial. Casi todas las mezclas de pop-rock mejoran con este boost. Pruébalo con los ojos cerrados.</td>
     </tr>
   </table>
-  <div class="tip" style="--mc:#4dabf7"><strong>Regla de la EQ Tonal:</strong> si en la EQ Correctiva cortaste a 350 Hz, no toques esa zona aquí. Estarías deshaciendo tu propio trabajo.</div>
+  <div class="tip" style="--mc:#4dabf7"><strong>Los tres peaks arrastrables:</strong> Lo-Mid, Mid y Hi-Mid pueden moverse horizontalmente en el analizador en tiempo real. Arrástralos sobre el espectro para encontrar exactamente la frecuencia donde el problema o la mejora son más audibles.</div>
   <div class="tip good" style="--mc:#4dabf7"><strong>El Air es el mayor secreto:</strong> activa/desactiva el módulo completo mientras escuchas con Air en +2 dB. Escucharás inmediatamente la apertura que añade. Eso es lo que diferencia muchos masters caseros de los profesionales.</div>
 
   <!-- STEREO WIDTH -->
@@ -624,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <td><span class="up">↑ Más cerca de 0</span> = más fuerte pero más riesgo<br><span class="down">↓ Más bajo</span> = más headroom para codecs</td>
       <td>
         <em>−1.0 dBFS</em> = estándar para streaming (Spotify, Apple Music, YouTube) ✓<br>
+        <em>−1.5 dBFS</em> = cuando el True Peak del original era alto (la app lo fija automáticamente)<br>
         <em>−0.3 dBFS</em> = para masterización de CD físico<br>
         <em>−2.0 dBFS o menos</em> = si la canción va a ser remasterizada o procesada más adelante
       </td>
@@ -669,9 +689,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- A/B -->
   <h2 id="ab">Comparación A/B</h2>
-  <p>El botón <strong>▶ Original</strong> reproduce tu mezcla sin ningún procesado. El botón <strong>▶ Masterizado</strong> reproduce la misma pista pasando por toda la cadena en tiempo real. Al alternar entre ambos, el punto de reproducción <strong>no se pierde</strong> — puedes saltar de uno a otro en el mismo instante de la canción. El cambio incorpora un <strong>crossfade de 55ms</strong> que elimina el clic digital al cambiar de fuente.</p>
-  <div class="tip good"><strong>Cómo hacer un buen A/B:</strong> el mayor error es comparar sin igualar el volumen. El masterizado suele sonar más fuerte, y el cerebro interpreta "más fuerte" como "mejor" aunque no lo sea. Usa el <strong>Output Gain</strong> para igualar el volumen percibido entre Original y Masterizado antes de comparar. Si el Masterizado sigue sonando mejor a igual volumen, el proceso está funcionando.</div>
-  <div class="tip"><strong>A/B con loop:</strong> activa el bucle en una sección representativa (estribillo, por ejemplo) y escucha ese fragmento en loop en modo Masterizado. Luego cambia a Original sin perder posición — escuchas exactamente el mismo fragmento sin procesar. Es la forma más precisa de evaluar el impacto real de la cadena.</div>
+  <p>La app tiene <strong>dos tipos de A/B</strong> que conviene no confundir:</p>
+  <h3>▶ Original / ▶ Masterizado</h3>
+  <p>Alterna entre la mezcla sin procesar y la mezcla pasando por la cadena completa. El punto de reproducción <strong>no se pierde</strong> — puedes saltar de uno a otro en el mismo instante de la canción. El cambio incorpora un <strong>crossfade de 55ms</strong> que elimina el clic digital al cambiar de fuente.</p>
+  <div class="tip good"><strong>Cómo hacer un buen A/B:</strong> el mayor error es comparar sin igualar el volumen. El masterizado suele sonar más fuerte, y el cerebro interpreta "más fuerte" como "mejor" aunque no lo sea. Usa el <strong>Output Gain</strong> para igualar el volumen percibido antes de comparar. Si el Masterizado sigue sonando mejor a igual volumen, el proceso está funcionando.</div>
+  <h3>Slots A / B — dos variantes del master</h3>
+  <p>Los botones <strong>A</strong> y <strong>B</strong> en la barra de acciones permiten mantener <strong>dos versiones distintas del master</strong> con ajustes independientes, para compararlas entre sí:</p>
+  <ul style="margin:12px 0 16px;padding-left:24px;color:#ccd0f0;line-height:2">
+    <li><strong>Slot A</strong> — se carga automáticamente con los ajustes del auto-análisis al abrir el archivo. Es el punto de partida.</li>
+    <li><strong>Slot B</strong> — se activa pulsando el botón B. La app pregunta si quieres copiar los ajustes de A o empezar desde los valores originales del análisis. Una vez inicializado, B mantiene sus propios ajustes independientemente de A.</li>
+    <li>Al alternar entre A y B, la cadena de audio se reconstruye al instante. Si estabas reproduciendo, el master cambia sin perder la posición.</li>
+    <li>Cada slot guarda sus ajustes en memoria. Al cerrar o recargar la página, ambos slots se pierden — guarda un preset (💾) si quieres conservar la configuración.</li>
+  </ul>
+  <div class="tip"><strong>Flujo recomendado:</strong> ajusta el master hasta que suene bien (slot A). Luego pulsa B, copia los ajustes de A, y experimenta variaciones más agresivas o conservadoras. Compara A y B escuchando el mismo fragmento en loop. Exporta el slot que prefieras.</div>
+  <div class="tip"><strong>A/B con loop:</strong> activa el bucle en una sección representativa (estribillo, por ejemplo) y alterna entre A y B sin perder posición — escuchas exactamente el mismo fragmento con cada variante del master. Es la forma más precisa de evaluar diferencias sutiles.</div>
 
   <!-- LOOP -->
   <h2 id="loop">Loop / Bucle</h2>
@@ -684,6 +715,16 @@ document.addEventListener('DOMContentLoaded', function() {
   </table>
   <p>El loop funciona tanto en modo <strong>Original</strong> como en modo <strong>Masterizado</strong>. El cambio A/B mantiene la posición dentro del loop, lo que permite comparar el mismo fragmento indefinidamente.</p>
   <div class="tip"><strong>Región por defecto:</strong> el loop se inicializa entre el 10% y el 90% de la duración total de la pista, evitando los silencios de inicio y final. Ajústalo a tu estribillo o a la sección que más variación tenga entre Original y Masterizado.</div>
+
+  <!-- RESET DE MÓDULOS (nuevo) -->
+  <h2 id="reset">Reset de módulos</h2>
+  <p>Dentro de cada módulo hay dos botones específicos junto al toggle de activación:</p>
+  <ul style="margin:12px 0 16px;padding-left:24px;color:#ccd0f0;line-height:2">
+    <li><strong>❓ Botón de ayuda</strong> – abre un modal con la explicación de ese módulo (igual que el botón "?" de la cabecera de cada tarjeta).</li>
+    <li><strong>↺ Botón de reset de módulo</strong> – restaura <strong>solo ese módulo</strong> a los valores que la IA calculó automáticamente cuando cargaste la canción. Muy útil cuando has experimentado demasiado y quieres volver al punto de partida sin tocar el resto de la cadena.</li>
+  </ul>
+  <p>Además, en la barra de acciones inferior hay un botón <strong>↺ Reset</strong> (global). Al pulsarlo, <strong>todos los módulos</strong> vuelven a los ajustes iniciales calculados por el análisis automático. El slot A (si estás en A) también se actualiza.</p>
+  <div class="tip good"><strong>Flujo recomendado:</strong> Antes de empezar a experimentar, guarda un preset (💾). Luego, si pierdes el norte, puedes cargar el preset o usar el reset global para volver al punto de partida limpio.</div>
 
   <!-- PRESETS -->
   <h2 id="presets">Presets</h2>
@@ -698,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- EXPORT -->
   <h2 id="export">Exportación</h2>
-  <p>El botón <strong>⬇ WAV</strong> renderiza la cadena completa con los ajustes actuales sobre el buffer original y descarga el resultado. Antes de exportar puedes seleccionar la <strong>profundidad de bits</strong>:</p>
+  <p>El botón <strong>⬇ WAV</strong> renderiza la cadena completa con los ajustes actuales sobre el buffer original y descarga el resultado. Antes de exportar puedes seleccionar la <strong>profundidad de bits</strong> mediante el selector que aparece junto al botón de exportación:</p>
   <table class="slider-table">
     <tr><th>Formato</th><th>Cuándo usarlo</th><th>Dithering</th></tr>
     <tr><td class="slider-name">24-bit (por defecto)</td><td>Entrega a estudios, distribuidores digitales, plataformas de streaming que aceptan masters de alta calidad (DistroKid, TuneCore, CD Baby…). Estándar profesional.</td><td>No necesario — el headroom de 24-bit hace el dithering irrelevante</td></tr>
@@ -724,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="legend-item">
       <div class="legend-icon" style="color:#4dabf7">━━</div>
       <div class="legend-title">EQ Tonal (azul)</div>
-      <div class="legend-desc">Curva de respuesta de los 4 filtros de la EQ Tonal (Low shelf, Mid, High, Air). Mismo sistema de referencia que la EQ Correctiva.</div>
+      <div class="legend-desc">Curva de respuesta de los 7 filtros de la EQ Tonal (Sub shelf, Low shelf, Lo-Mid peak, Mid peak, Hi-Mid peak, High shelf, Air shelf). Mismo sistema de referencia que la EQ Correctiva. Los tres peaks centrales (Lo-Mid, Mid, Hi-Mid) son arrastrables directamente sobre el espectro.</div>
     </div>
   </div>
   <h3>Nodos EQ arrastrables</h3>
@@ -810,8 +851,8 @@ document.addEventListener('DOMContentLoaded', function() {
   <p>Un archivo WAV puede tener una muestra máxima de −0.1 dBFS (aparentemente seguro), pero al recodificarlo a MP3 o AAC, el proceso de codificación introduce <strong>inter-sample peaks</strong> que pueden superar 0 dBFS y clipear. Plataformas como Spotify aceptan archivos con True Peak hasta −1 dBTP.</p>
   <h3>Cómo se calcula</h3>
   <p>La app usa <strong>interpolación cúbica de Catmull-Rom a 4×</strong>: para cada par de muestras consecutivas, evalúa el polinomio cúbico en t=0.25, 0.5 y 0.75, obteniendo 3 puntos adicionales entre muestras. El máximo de todos estos puntos es el True Peak.</p>
-  <div class="tip good"><strong>Regla de entrega:</strong> True Peak ≤ −1.0 dBTP para cualquier plataforma de streaming. Si el indicador muestra "⚠ supera −1 dBTP", baja el Output Gain o el Ceiling del limitador hasta que el True Peak sea seguro.</div>
-  <div class="tip warn"><strong>El True Peak solo se calcula sobre el master procesado</strong>, no sobre el original. Aparece en la métrica "→ después" una vez completado el análisis en segundo plano (puede tardar 10-30 segundos para tracks largas).</div>
+  <div class="tip good"><strong>Regla de entrega:</strong> True Peak ≤ −1.0 dBTP para cualquier plataforma de streaming. La app calcula el True Peak del original al cargar el archivo y ajusta el Ceiling del limitador de forma preventiva. Si tras masterizar sigue superando −1 dBTP, baja el Output Gain o el Ceiling hasta que el indicador muestre "✓ OK".</div>
+  <div class="tip"><strong>Doble cálculo:</strong> el True Peak se mide <em>dos veces</em> — sobre el original al cargar (para que el auto-análisis fije un Ceiling conservador) y sobre el master procesado en segundo plano (para verificar que el resultado final cumple el límite de −1 dBTP). Ambos valores aparecen en el panel de métricas.</div>
 
   <!-- REGLAS -->
   <h2 id="reglas">Reglas de oro</h2>
