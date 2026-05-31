@@ -15,7 +15,7 @@
 - **Output Gain post‑limitador** — trim de salida que se bake en el WAV exportado sin afectar al comportamiento del limitador.
 - **VU Meter estéreo** — barras RMS con peak hold de 2 segundos.
 - **Presets** — guarda y carga tu configuración completa (archivo `.mpreset`).
-- **Exportación WAV** — elige 24‑bit (profesional) o 16‑bit (distribución directa) con dithering TPDF para 16‑bit.
+- **Exportación WAV** — elige 24‑bit (profesional) o 16‑bit (distribución directa) con dithering TPDF para ambos.
 
 ## 🖥️ Capturas de pantalla
 
