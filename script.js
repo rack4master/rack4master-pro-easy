@@ -175,6 +175,7 @@ function defaultSettings(){
       sub:0,  subFreq:40,
       low:0,  lowFreq:120,
       loMid:0,loMidFreq:350,
+      mid:0,  midFreq:1000,
       hiMid:0,hiMidFreq:3000,
       high:0, highFreq:8000,
       air:1.5,airFreq:16000
@@ -223,6 +224,7 @@ function autoSettings(analysis){
   s.eqAdd.sub  =Math.max(-4,Math.min(3,-rd[0]*.20));
   s.eqAdd.low  =Math.max(-4,Math.min(3,-rd[1]*.30));
   s.eqAdd.loMid=Math.max(-4,Math.min(3,-rd[2]*.25));
+  s.eqAdd.mid  =Math.max(-4,Math.min(3,-rd[3]*.25));
   s.eqAdd.hiMid=Math.max(-4,Math.min(3,-rd[4]*.30));
   s.eqAdd.high =Math.max(-4,Math.min(3,-rd[5]*.35));
   s.eqAdd.air  =Math.max(-4,Math.min(5,1.5-rd[6]*.25));
@@ -330,6 +332,7 @@ function buildLiveChain(audioBuffer,settings,offset=0){
     {type:'lowshelf', freq:s.eqAdd.subFreq??40,    key:'sub'},
     {type:'lowshelf', freq:s.eqAdd.lowFreq??120,   key:'low'},
     {type:'peaking',  freq:s.eqAdd.loMidFreq??350, key:'loMid', q:.7},
+    {type:'peaking',  freq:s.eqAdd.midFreq??1000,  key:'mid',   q:.7},
     {type:'peaking',  freq:s.eqAdd.hiMidFreq??3000,key:'hiMid', q:.7},
     {type:'highshelf',freq:s.eqAdd.highFreq??8000, key:'high'},
     {type:'highshelf',freq:s.eqAdd.airFreq??16000, key:'air'},
@@ -395,9 +398,11 @@ function destroyRawSrc(){
 function stopAll(){destroyLiveChain();destroyRawSrc();stopWaveformAnim();state.isPlaying=false;state.playMode=null;}
 
 function liveUpdate(key){
-  // Sincronizar el slot activo para que el cambio no se pierda al alternar A/B
-  if(state.abSlot==='A'&&state.settingsA) state.settingsA=deepClone(state.settings);
-  else if(state.abSlot==='B'&&state.settingsB) state.settingsB=deepClone(state.settings);
+  // Sincronizar el slot activo — saltarse durante applyAllLiveUpdates (evita 25 deepClones)
+  if(!state._skipABSync){
+    if(state.abSlot==='A'&&state.settingsA) state.settingsA=deepClone(state.settings);
+    else if(state.abSlot==='B'&&state.settingsB) state.settingsB=deepClone(state.settings);
+  }
   if(!liveChain)return;
   const s=state.settings,t=getAudioCtx().currentTime;
   const ramp=(p,v,tc=.012)=>p.setTargetAtTime(v,t,tc);
@@ -412,14 +417,14 @@ function liveUpdate(key){
   else if(key==='comp.release')   ramp(liveChain.comp.release,s.comp.release/1000);
   else if(key==='comp.makeup')    ramp(liveChain.makeup.gain,s.comp.enabled?Math.pow(10,s.comp.makeup/20):1);
   else if(key==='eqAdd.enabled'){
-    const ks=['sub','low','loMid','hiMid','high','air'];
+    const ks=['sub','low','loMid','mid','hiMid','high','air'];
     liveChain.eqAdd.forEach((f,i)=>ramp(f.gain,s.eqAdd.enabled?s.eqAdd[ks[i]]:0));
   }
   else if(key.startsWith('eqAdd.')){
     const k=key.split('.')[1];
-    const gKeys=['sub','low','loMid','hiMid','high','air'];
-    const fKeys=['subFreq','lowFreq','loMidFreq','hiMidFreq','highFreq','airFreq'];
-    const defFreqs=[40,120,350,3000,8000,16000];
+    const gKeys=['sub','low','loMid','mid','hiMid','high','air'];
+    const fKeys=['subFreq','lowFreq','loMidFreq','midFreq','hiMidFreq','highFreq','airFreq'];
+    const defFreqs=[40,120,350,1000,3000,8000,16000];
     const gi=gKeys.indexOf(k),fi=fKeys.indexOf(k);
     if(gi>=0) ramp(liveChain.eqAdd[gi].gain,s.eqAdd.enabled?s.eqAdd[k]:0);
     else if(fi>=0) ramp(liveChain.eqAdd[fi].frequency,s.eqAdd[k]??defFreqs[fi]);
@@ -431,12 +436,17 @@ function liveUpdate(key){
 
 function applyAllLiveUpdates(){
   if(!liveChain)return;
+  state._skipABSync=true;
   ['hpf.enabled','eqSub.enabled','sat.enabled','comp.enabled','eqAdd.enabled','width.enabled','lim.enabled',
    'hpf.freq','sat.amount','comp.threshold','comp.ratio','comp.attack','comp.release','comp.makeup',
-   'eqAdd.sub','eqAdd.low','eqAdd.loMid','eqAdd.hiMid','eqAdd.high','eqAdd.air',
-   'eqAdd.subFreq','eqAdd.lowFreq','eqAdd.loMidFreq','eqAdd.hiMidFreq','eqAdd.highFreq','eqAdd.airFreq',
+   'eqAdd.sub','eqAdd.low','eqAdd.loMid','eqAdd.mid','eqAdd.hiMid','eqAdd.high','eqAdd.air',
+   'eqAdd.subFreq','eqAdd.lowFreq','eqAdd.loMidFreq','eqAdd.midFreq','eqAdd.hiMidFreq','eqAdd.highFreq','eqAdd.airFreq',
    'width.amount','lim.ceiling','outGain.gain'].forEach(k=>liveUpdate(k));
   for(let i=0;i<4;i++)['gain','freq','q'].forEach(p=>liveUpdate(`eqSub.bands.${i}.${p}`));
+  state._skipABSync=false;
+  // Sincronizar slot activo una sola vez al final
+  if(state.abSlot==='A'&&state.settingsA) state.settingsA=deepClone(state.settings);
+  else if(state.abSlot==='B'&&state.settingsB) state.settingsB=deepClone(state.settings);
 }
 
 /* ══════════════════════════════════════
@@ -458,6 +468,7 @@ async function processAudio(buf,s){
       {type:'lowshelf', freq:s.eqAdd.subFreq??40,    gain:s.eqAdd.sub},
       {type:'lowshelf', freq:s.eqAdd.lowFreq??120,   gain:s.eqAdd.low},
       {type:'peaking',  freq:s.eqAdd.loMidFreq??350, gain:s.eqAdd.loMid, q:.7},
+      {type:'peaking',  freq:s.eqAdd.midFreq??1000,  gain:s.eqAdd.mid,   q:.7},
       {type:'peaking',  freq:s.eqAdd.hiMidFreq??3000,gain:s.eqAdd.hiMid, q:.7},
       {type:'highshelf',freq:s.eqAdd.highFreq??8000, gain:s.eqAdd.high},
       {type:'highshelf',freq:s.eqAdd.airFreq??16000, gain:s.eqAdd.air},
@@ -518,7 +529,7 @@ function toWav(buf, bitDepth=24){
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const state={phase:'upload',fileName:'',origBuf:null,analysis:null,procAnalysis:null,initialSettings:null,settings:defaultSettings(),isPlaying:false,playMode:null,audioCtx:null,openMods:new Set(),playbackOffset:0,selectedEQBand:null,waveformData:null,abSlot:'A',settingsA:null,settingsB:null};
+const state={phase:'upload',fileName:'',origBuf:null,analysis:null,procAnalysis:null,initialSettings:null,settings:defaultSettings(),isPlaying:false,playMode:null,audioCtx:null,openMods:new Set(),playbackOffset:0,selectedEQBand:null,waveformData:null,abSlot:'A',settingsA:null,settingsB:null,_skipABSync:false};
 
 /* ══════════════════════════════════════
    RENDER
@@ -626,7 +637,7 @@ return`<div class="module ${s.enabled?'on':''}" style="--mc:${color}">
   </div>
 </div>`;}
 
-function modSummary(id){const s=state.settings[id];if(!s.enabled)return'<span style="color:#404060">bypass</span>';const f1=v=>(v>0?'+':'')+v.toFixed(1);switch(id){case'hpf':return`${s.freq} Hz`;case'eqSub':return s.bands.map(b=>f1(b.gain)+'dB').join(' ');case'sat':return`${(s.amount*100).toFixed(0)}%`;case'comp':return`${s.ratio.toFixed(1)}:1 @ ${s.threshold}dB`;case'eqAdd':return`Sub${f1(s.sub)} L${f1(s.low)} LM${f1(s.loMid)} HM${f1(s.hiMid)} H${f1(s.high)} Air${f1(s.air)}`;case'width':return`×${s.amount.toFixed(2)}`;case'lim':return`${s.ceiling} dBFS`;default:return'';}}
+function modSummary(id){const s=state.settings[id];if(!s.enabled)return'<span style="color:#404060">bypass</span>';const f1=v=>(v>0?'+':'')+v.toFixed(1);switch(id){case'hpf':return`${s.freq} Hz`;case'eqSub':return s.bands.map(b=>f1(b.gain)+'dB').join(' ');case'sat':return`${(s.amount*100).toFixed(0)}%`;case'comp':return`${s.ratio.toFixed(1)}:1 @ ${s.threshold}dB`;case'eqAdd':return`Sub${f1(s.sub)} L${f1(s.low)} LM${f1(s.loMid)} M${f1(s.mid)} HM${f1(s.hiMid)} H${f1(s.high)} Air${f1(s.air)}`;case'width':return`×${s.amount.toFixed(2)}`;case'lim':return`${s.ceiling} dBFS`;default:return'';}}
 
 function buildModBody(id){
   const s=state.settings[id];
@@ -664,7 +675,7 @@ function buildModBody(id){
           <div id="eq-readout-eqAdd" class="eq-readout">
             <span style="color:var(--dim);font-size:11px">Haz clic en un nodo para seleccionarlo</span>
           </div>
-          <div class="eq-hint">↕ arrastrar = ganancia &nbsp;·&nbsp; ↔ arrastrar = frecuencia (peaks Mid/High) &nbsp;·&nbsp; Low/Air shelf = solo ganancia</div>
+          <div class="eq-hint">↕ arrastrar = ganancia &nbsp;·&nbsp; ↔ arrastrar = frecuencia (Lo-Mid / Mid / Hi-Mid) &nbsp;·&nbsp; shelves Sub/Low/High/Air = solo ganancia</div>
         </div>`;
     case'width':
       return `${sl('width.amount','Amplitud M/S',s.amount,.5,2,.05,'')}<div style="font-size:12px;color:var(--muted);margin-top:5px">1.0 = original · &lt;1.0 mono · &gt;1.0 más ancho</div>`;
@@ -686,9 +697,10 @@ return`<div class="card">
     <button class="btn btn-orig ${isPlaying&&playMode==='orig'?'active':''}" id="btnPlayOrig">${isPlaying&&playMode==='orig'?'⏸ Original':'▶ Original'}</button>
     <button class="btn btn-stop" id="btnStop" title="Stop">⏹</button>
     <button class="btn ${loopOn?'active':''}" id="btnLoop" title="Activar/desactivar loop region" style="color:var(--purple);border-color:${loopOn?'var(--purple)':'var(--dim)'};background:${loopOn?'rgba(204,93,232,.18)':'transparent'}">⟳ Loop</button>
-    <div style="display:flex;gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;flex-shrink:0" title="Comparación A/B">
-      <button id="btnAbA" style="padding:9px 16px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='A'?'rgba(105,219,124,.22)':'transparent'};color:${abSlot==='A'?'var(--green)':'var(--muted)'};border-right:1px solid var(--dim)">A</button>
-      <button id="btnAbB" style="padding:9px 16px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='B'?'rgba(77,171,247,.22)':'transparent'};color:${abSlot==='B'?'var(--blue)':settingsB?'var(--blue)':'var(--dim)'}">${settingsB?'B':'B?'}</button>
+    <div style="display:flex;align-items:center;gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;flex-shrink:0" title="Comparación A/B">
+      <button id="btnAbA" style="padding:9px 14px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='A'?'rgba(105,219,124,.22)':'transparent'};color:${abSlot==='A'?'var(--green)':'var(--muted)'}">A</button>
+      <span style="color:var(--dim);font-size:13px;font-weight:300;user-select:none">/</span>
+      <button id="btnAbB" style="padding:9px 14px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='B'?'rgba(77,171,247,.22)':'transparent'};color:${abSlot==='B'?'var(--blue)':settingsB?'var(--blue)':'var(--dim)'}">B</button>
     </div>
     <div style="display:flex;gap:0;border:1px solid var(--yellow);border-radius:8px;overflow:hidden;flex-shrink:0">
       <button class="btn btn-export" id="btnExport" style="border:none;border-radius:0;border-right:1px solid var(--yellow)">⬇ WAV</button>
@@ -754,7 +766,23 @@ function drawSpectrum(){
   });
 }
 
-function getIssues(){const{analysis:a}=state;if(!a)return[];const r=[];if(a.lufs<-22)r.push({t:'info',m:`Nivel bajo (${a.lufs.toFixed(1)} dB) → el master lo subirá hacia -14 LUFS`});if(a.lufs>-6)r.push({t:'warn',m:`Nivel muy alto (${a.lufs.toFixed(1)} dB) → revisa clipping`});if(a.dr>14)r.push({t:'info',m:`DR alto (${a.dr.toFixed(1)} dB) → el compresor aplicará glue`});if(a.dr<4)r.push({t:'warn',m:`DR bajo (${a.dr.toFixed(1)} dB) → ya muy comprimido`});if(a.correlation>.93)r.push({t:'info',m:'Audio casi mono → se ampliará el campo estéreo (M/S)'});if(a.correlation<.25)r.push({t:'warn',m:'Correlación muy baja → posibles problemas de fase'});a.bands.filter(b=>b.diff>5).forEach(b=>r.push({t:'info',m:`${b.name}: ${b.diff.toFixed(1)}dB sobre target → EQ auto-calculada`}));return r;}
+function getIssues(){
+  const{analysis:a,settings:s}=state; if(!a)return[];const r=[];
+  // Nivel general
+  if(a.lufs<-22) r.push({t:'info',m:`Nivel bajo (${a.lufs.toFixed(1)} LUFS) → el master añadirá ganancia hacia -14 LUFS`});
+  if(a.lufs>-6)  r.push({t:'warn',m:`Nivel muy alto (${a.lufs.toFixed(1)} LUFS) → revisa clipping antes de masterizar`});
+  // Rango dinámico — reflejar lo que la app ya corrigió
+  if(a.dr<3)  r.push({t:'warn',m:`DR muy bajo (${a.dr.toFixed(1)} dB) → compresor y saturación desactivados automáticamente para no empeorar`});
+  else if(a.dr<5) r.push({t:'info',m:`DR bajo (${a.dr.toFixed(1)} dB) → compresor suavizado a ratio ${s.comp.ratio.toFixed(1)}:1 para preservar la dinámica`});
+  // True Peak del original
+  if(a.truePeak!=null&&a.truePeak>-2) r.push({t:'info',m:`True Peak original alto (${a.truePeak.toFixed(1)} dBTP) → ceiling del limiter ajustado a ${s.lim.ceiling.toFixed(1)} dBFS`});
+  // Estéreo
+  if(a.correlation>.93) r.push({t:'info',m:'Audio casi mono → stereo width ampliará el campo lateral'});
+  if(a.correlation<.25) r.push({t:'warn',m:'Correlación muy baja — posibles problemas de fase. Verifica en mono.'});
+  // HPF auto-subido
+  if(s.hpf.freq>30) r.push({t:'info',m:`Exceso de sub detectado → HPF subido a ${s.hpf.freq} Hz automáticamente`});
+  return r;
+}
 
 /* ══════════════════════════════════════
    EQ CANVAS — Gráfico de EQ interactivo
@@ -808,16 +836,17 @@ function getEQBands(moduleId){
         {freq:s.eqAdd.subFreq??40,    gain:s.eqAdd.sub,   q:1.0},
         {freq:s.eqAdd.lowFreq??120,   gain:s.eqAdd.low,   q:1.0},
         {freq:s.eqAdd.loMidFreq??350, gain:s.eqAdd.loMid, q:0.7},
+        {freq:s.eqAdd.midFreq??1000,  gain:s.eqAdd.mid,   q:0.7},
         {freq:s.eqAdd.hiMidFreq??3000,gain:s.eqAdd.hiMid, q:0.7},
         {freq:s.eqAdd.highFreq??8000, gain:s.eqAdd.high,  q:1.0},
         {freq:s.eqAdd.airFreq??16000, gain:s.eqAdd.air,   q:1.0},
       ],
-      types: ['lowshelf','lowshelf','peaking','peaking','highshelf','highshelf'],
-      colors:['#2060ff','#3090ff','#40b8ff','#50d8ff','#70eeff','#a0f8ff'],
+      types: ['lowshelf','lowshelf','peaking','peaking','peaking','highshelf','highshelf'],
+      colors:['#2060ff','#3090ff','#40b8ff','#48ccff','#50d8ff','#70eeff','#a0f8ff'],
       color: '#4dabf7',
       gainMin:-10, gainMax:10,
       freqMin:20,  freqMax:22000,
-      fixedFreq:[true,true,false,false,true,true],
+      fixedFreq:[true,true,false,false,false,true,true],
       hasQ:false,
     };
   }
@@ -996,8 +1025,8 @@ function applyEQChange(moduleId,bandIndex,newFreq,newGain,newQ){
       if(sl)sl.value=b.q; if(vl)vl.textContent=b.q.toFixed(1);
     }
   } else {
-    const gMap=['sub','low','loMid','hiMid','high','air'];
-    const fMap=['subFreq','lowFreq','loMidFreq','hiMidFreq','highFreq','airFreq'];
+    const gMap=['sub','low','loMid','mid','hiMid','high','air'];
+    const fMap=['subFreq','lowFreq','loMidFreq','midFreq','hiMidFreq','highFreq','airFreq'];
     const s=state.settings.eqAdd;
     if(newFreq!==null){s[fMap[bandIndex]]=newFreq; liveUpdate('eqAdd.'+fMap[bandIndex]);}
     if(newGain!==null){s[gMap[bandIndex]]=parseFloat(newGain.toFixed(2)); liveUpdate('eqAdd.'+gMap[bandIndex]);}
@@ -1753,8 +1782,8 @@ function resetModule(id){
   else if(id==='sat')liveUpdate('sat.amount');
   else if(id==='comp')['threshold','ratio','attack','release','makeup'].forEach(p=>liveUpdate(`comp.${p}`));
   else if(id==='eqAdd'){
-    ['sub','low','loMid','hiMid','high','air'].forEach(p=>liveUpdate(`eqAdd.${p}`));
-    ['subFreq','lowFreq','loMidFreq','hiMidFreq','highFreq','airFreq'].forEach(p=>liveUpdate(`eqAdd.${p}`));
+    ['sub','low','loMid','mid','hiMid','high','air'].forEach(p=>liveUpdate(`eqAdd.${p}`));
+    ['subFreq','lowFreq','loMidFreq','midFreq','hiMidFreq','highFreq','airFreq'].forEach(p=>liveUpdate(`eqAdd.${p}`));
   }
   else if(id==='width')liveUpdate('width.amount');
   else if(id==='lim')liveUpdate('lim.ceiling');
@@ -1823,7 +1852,19 @@ async function doLoad(file){
     processAudio(decoded,state.settings).then(async procBuf=>{
       const fd2=await analyzeSpectrum(procBuf);
       const bands2=FREQ_BANDS.map(b=>{const val=getBandPower(fd2,b.min,b.max,8192,procBuf.sampleRate);return{...b,value:val,diff:val-b.target};});
-      state.procAnalysis={bands:bands2,lufs:calcLUFS(procBuf),rms:calcRMS(procBuf),dr:calcDR(procBuf),correlation:calcCorr(procBuf),truePeak:calcTruePeak(procBuf)};
+      const tp2=calcTruePeak(procBuf);
+      state.procAnalysis={bands:bands2,lufs:calcLUFS(procBuf),rms:calcRMS(procBuf),dr:calcDR(procBuf),correlation:calcCorr(procBuf),truePeak:tp2};
+      // Segunda pasada: si el TP del master supera -1 dBTP, bajar ceiling y re-sincronizar slots A/B
+      if(tp2>-1.0){
+        const excess=tp2-(-1.0);
+        const newCeiling=Math.max(-3.0,Math.round((state.settings.lim.ceiling-excess-0.2)*10)/10);
+        if(newCeiling<state.settings.lim.ceiling){
+          state.settings.lim.ceiling=newCeiling;
+          state.initialSettings.lim.ceiling=newCeiling;
+          state.settingsA=deepClone(state.settings);
+          if(liveChain)liveUpdate('lim.ceiling');
+        }
+      }
       render();
     }).catch(e=>console.warn('Background analysis:',e));
   }catch(e){
