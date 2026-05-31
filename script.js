@@ -211,15 +211,15 @@ function autoSettings(analysis){
 
   // ── COMP — adaptar según dinámica existente ───────────────────────────
   if(dr<3){
-    // Extremadamente comprimido: desactivar comp y SAT para no empeorar
+    // Extremadamente comprimido: desactivar comp y SAT via toggle
     s.comp.enabled=false;
     s.comp.ratio=1.2; s.comp.threshold=-6; s.comp.makeup=0;
-    s.sat.amount=0;
+    s.sat.enabled=false; s.sat.amount=0;
   } else if(dr<5){
-    // Muy comprimido: comp mínimo, sin saturación
+    // Muy comprimido: comp mínimo activo, SAT desactivada via toggle
     s.comp.ratio=1.3; s.comp.threshold=-10;
     s.comp.makeup=Math.max(0,Math.min(3,(-14-lufs)*.20));
-    s.sat.amount=Math.min(0.05,s.sat.amount);
+    s.sat.enabled=false; s.sat.amount=0;
   } else {
     // Normal
     s.comp.makeup=Math.max(0,Math.min(8,(-14-lufs)*.35));
@@ -794,7 +794,7 @@ function getIssues(){
   if(a.lufs>-6)  r.push({t:'warn',m:`Nivel muy alto (${a.lufs.toFixed(1)} LUFS) → revisa clipping antes de masterizar`});
   // Rango dinámico — reflejar lo que la app ya corrigió
   if(a.dr<3)  r.push({t:'warn',m:`DR muy bajo (${a.dr.toFixed(1)} dB) → compresor y saturación desactivados automáticamente para no empeorar`});
-  else if(a.dr<5) r.push({t:'info',m:`DR bajo (${a.dr.toFixed(1)} dB) → compresor suavizado a ratio ${s.comp.ratio.toFixed(1)}:1 para preservar la dinámica`});
+  else if(a.dr<5) r.push({t:'info',m:`DR bajo (${a.dr.toFixed(1)} dB) → compresor suavizado a ratio ${s.comp.ratio.toFixed(1)}:1, saturación desactivada`});
   // Clipping en el original
   if(a.clipped>10) r.push({t:'warn',m:`Clipping detectado en el original (${a.clipped} muestras) — masterizar no restaura señal recortada`});
   if(a.truePeak!=null&&a.truePeak>-2) r.push({t:'info',m:`True Peak original alto (${a.truePeak.toFixed(1)} dBTP) → ceiling del limiter ajustado a ${s.lim.ceiling.toFixed(1)} dBFS`});

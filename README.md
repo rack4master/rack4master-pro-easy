@@ -42,8 +42,8 @@ IN → HPF → EQ Correctiva (4 bandas) → Saturación → Bus Comp → EQ Tona
 |--------|------|---------|
 | HPF | High‑pass 12 dB/oct | Elimina subsónico (auto: 22–55 Hz según contenido sub) |
 | EQ Correctiva | 4× peaking Q‑adjustable | Cortes quirúrgicos de mud en 200 / 300 / 500 / 1000 Hz |
-| Saturación | Waveshaper tanh | Calidez analógica, densidad espectral |
-| Bus Comp | DynamicsCompressor | Glue estéreo (auto‑bypass si DR < 3 dB) |
+| Saturación | Waveshaper tanh | Calidez analógica, densidad espectral (auto-desactivada si DR < 5 dB) |
+| Bus Comp | DynamicsCompressor | Glue estéreo (auto-bypass si DR < 3 dB; ratio mínimo 1.3:1 si DR < 5 dB) |
 | EQ Tonal | 2 shelves + 3 peaks + 2 shelves | Moldeo espectral de carácter (7 bandas = 7 zonas del análisis) |
 | Stereo Width | Matriz M/S | Control de amplitud estéreo |
 | Limiter | Ratio 20:1, ataque 1 ms | Ceiling auto‑ajustado según True Peak del original |
