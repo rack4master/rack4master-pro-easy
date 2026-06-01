@@ -90,7 +90,7 @@ const TRANSLATIONS = {
 
     // Footer
     'footer.copy':    '© 2026 Rack4Master. Francesc Llorens.',
-    'footer.local':   'Se ejecuta localmente. Sin datos almacenados ni rastreados.',
+    'footer.local':   'Sin datos almacenados ni rastreados.',
     'footer.privacy': 'Privacidad',
     'footer.legal':   'Aviso legal',
     'footer.terms':   'Términos',
@@ -295,7 +295,7 @@ const TRANSLATIONS = {
     'menu.lang': 'Idioma',
 
     'footer.copy':    '© 2026 Rack4Master. Francesc Llorens.',
-    'footer.local':   "S'executa localment. Sense dades emmagatzemades ni rastreig.",
+    'footer.local':   "Sense dades emmagatzemades ni rastreig.",
     'footer.privacy': 'Privadesa',
     'footer.legal':   'Avís legal',
     'footer.terms':   "Termes d'ús",
