@@ -8,15 +8,66 @@
 </head>
 <body>
 <div class="app">
+
+  <!-- HEADER -->
   <div class="header">
-    <div class="header-eye">AI MASTERING ENGINE · REAL-TIME</div>
+    <div class="header-eye" data-i18n="header.eye">AI MASTERING ENGINE · TIEMPO REAL</div>
     <div class="header-title">Rack4Master Pro Easy</div>
-    <div class="header-sub">HPF → EQ− → SAT → COMP → EQ+ → WIDTH → LIMIT · Controles en tiempo real</div>
+    <div class="header-sub" data-i18n="header.sub">HPF → EQ− → SAT → COMP → EQ+ → WIDTH → LIMIT · Controles en tiempo real</div>
+
+    <!-- HAMBURGER -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menú" aria-expanded="false">☰</button>
+    <div class="hamburger-menu" id="hamburgerMenu">
+      <a href="help.html" target="_blank" class="hmenu-item" data-i18n="menu.help">📖 Ayuda</a>
+      <div class="hmenu-sep"></div>
+      <div class="hmenu-lang-label" data-i18n="menu.lang">Idioma</div>
+      <div class="hmenu-langs">
+        <button class="lang-btn active" data-lang="es">ES</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="ca">CA</button>
+      </div>
+    </div>
   </div>
+
   <div id="root"></div>
   <div id="modalRoot"></div>
 
+</div><!-- /.app -->
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  <span class="foot-copy" data-i18n="footer.copy">© 2026 Rack4Master. Francesc Llorens. Todos los derechos reservados.</span>
+  <span class="foot-sep">·</span>
+  <span class="foot-local" data-i18n="footer.local">Se ejecuta localmente. Sin datos almacenados ni rastreados.</span>
+  <span class="foot-sep">·</span>
+  <a href="#" class="foot-link" data-modal="privacy" data-i18n="footer.privacy">Privacidad</a>
+  <span class="foot-sep">·</span>
+  <a href="#" class="foot-link" data-modal="legal" data-i18n="footer.legal">Aviso legal</a>
+  <span class="foot-sep">·</span>
+  <a href="#" class="foot-link" data-modal="terms" data-i18n="footer.terms">Términos</a>
+  <span class="foot-sep">·</span>
+  <form action="https://www.paypal.com/donate" method="post" target="_blank" style="display:inline-block;margin:0;vertical-align:middle;">
+    <input type="hidden" name="business" value="73KKE6DVSJ8WY">
+    <input type="hidden" name="no_recurring" value="1">
+    <input type="hidden" name="currency_code" value="EUR">
+    <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit"
+      title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal"
+      style="vertical-align:middle;opacity:.8;filter:brightness(.85);">
+  </form>
+</footer>
+
+<!-- FOOTER MODAL -->
+<div class="footer-modal-overlay" id="footerModal">
+  <div class="footer-modal">
+    <div class="footer-modal-header">
+      <h2 class="footer-modal-title" id="footerModalTitle"></h2>
+      <button class="footer-modal-close" id="footerModalClose">✕</button>
+    </div>
+    <div class="footer-modal-body" id="footerModalBody"></div>
+  </div>
 </div>
+
+<script src="i18n.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

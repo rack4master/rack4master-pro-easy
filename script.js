@@ -576,13 +576,19 @@ function render(){
 
 function buildUI(){if(state.phase==='upload')return buildUpload();if(state.phase==='analyzing')return buildLoading();return buildMain();}
 
-function buildUpload(){return`<div class="card"><div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn-help" onclick="window.open('help.html','_blank')">? Ayuda</button></div><div class="dropzone" id="dz"><div class="dz-icon">🎵</div><div class="dz-title">Arrastra tu mezcla aquí</div><div class="dz-sub">o haz clic para seleccionar</div><div class="dz-types">MP3 · WAV · FLAC · AAC · OGG · M4A</div></div></div><input type="file" id="fileInput" accept="audio/*" style="display:none">`;}
+function buildUpload(){return`<div class="card"><div class="dropzone" id="dz"><div class="dz-icon">🎵</div><div class="dz-title">${t('upload.title')}</div><div class="dz-sub">${t('upload.sub')}</div><div class="dz-types">${t('upload.types')}</div></div></div><input type="file" id="fileInput" accept="audio/*" style="display:none">`;}
 
-function buildLoading(){return`<div class="card loading"><div class="loading-icon anim-pulse">🔬</div><div class="loading-title">Analizando y calculando settings…</div><div class="loading-sub">${esc(state.fileName)}</div><div class="pbar"><div class="pfill"></div></div></div>`;}
+function buildLoading(){return`<div class="card loading"><div class="loading-icon anim-pulse">🔬</div><div class="loading-title">${t('loading.title')}</div><div class="loading-sub">${esc(state.fileName)}</div><div class="pbar"><div class="pfill"></div></div></div>`;}
 
-function buildMain(){return`${buildFileBar()}${buildAnalysisCard()}${buildChainViz()}<div class="card"><div class="section-title"><span class="section-title-text">CADENA DE MÓDULOS — controles en tiempo real</span></div>${MODULES_META.map(m=>buildModule(m)).join('')}</div>${buildLiveSpectrumCard()}${buildWaveformCard()}${buildActions()}`;}
+function buildMain(){return`${buildFileBar()}${buildAnalysisCard()}${buildChainViz()}<div class="card"><div class="section-title"><span class="section-title-text">${t('section.chain')}</span></div>${MODULES_META.map(m=>buildModule(m)).join('')}</div>${buildLiveSpectrumCard()}${buildWaveformCard()}${buildActions()}`;}
 
-function buildFileBar(){const badge=state.isPlaying&&state.playMode==='proc'?`<span class="live-badge"><span class="live-dot"></span>LIVE MASTER</span>`:state.isPlaying&&state.playMode==='orig'?`<span class="orig-badge">▶ ORIGINAL</span>`:'';return`<div class="file-bar"><span class="file-name">✓ ${esc(state.fileName)}</span><div style="display:flex;align-items:center;gap:10px">${badge}<button class="btn-help" onclick="window.open('help.html','_blank')" title="Abrir ayuda">? Ayuda</button><button class="file-close" id="btnReset" title="Cargar otro">✕</button></div></div>`;}
+function buildFileBar(){
+  const badge=state.isPlaying&&state.playMode==='proc'
+    ?`<span class="live-badge"><span class="live-dot"></span>${t('filebar.live')}</span>`
+    :state.isPlaying&&state.playMode==='orig'
+    ?`<span class="orig-badge">▶ ${t('filebar.orig')}</span>`:'';
+  return`<div class="file-bar"><span class="file-name">✓ ${esc(state.fileName)}</span><div style="display:flex;align-items:center;gap:10px">${badge}<button class="file-close" id="btnReset" title="Cargar otro">✕</button></div></div>`;
+}
 
 function buildAnalysisCard(){const{analysis:a,procAnalysis:pa}=state;if(!a)return'';
   const col=(v,lo,hi)=>v>=lo&&v<=hi?'var(--green)':'var(--orange)';
@@ -592,36 +598,36 @@ function buildAnalysisCard(){const{analysis:a,procAnalysis:pa}=state;if(!a)retur
   const issues=getIssues();
 return`<div class="card">
   <div class="section-title">
-    <span class="section-title-text">ANÁLISIS${pa?' — ANTES / DESPUÉS':' — comparación calculándose…'}</span>
+    <span class="section-title-text">${pa?t('section.analysis.after'):t('section.analysis.before')}</span>
     <button class="section-help-btn" onclick="showHelp('spectrum')" title="¿Cómo leer este gráfico?">?</button>
   </div>
   <canvas id="spectrum"></canvas>
-  <div class="spec-legend">${pa?'<strong style="color:#e8eaf8">A</strong> barra color = original &nbsp;·&nbsp; <strong style="color:#e8eaf8">B</strong> barra blanca = masterizado &nbsp;·&nbsp;':''}Línea azul <span style="color:#55aaff">- - -</span> = target pop-rock &nbsp;·&nbsp; número = diferencia al target</div>
+  <div class="spec-legend">${pa?t('spectrum.legend.ab'):''}${t('spectrum.legend')}</div>
   <div class="metrics" style="grid-template-columns:repeat(5,1fr)">
     <div class="metric">
       <div class="metric-val" style="color:${lufsCol(a.lufs)}">${fmt(a.lufs,1)}<span style="font-size:10px"> LUFS</span></div>
       ${pa?`<div class="metric-sub" style="color:${lufsCol(pa.lufs)}">→ ${fmt(pa.lufs,1)} LUFS</div>`:''}
-      <div class="metric-label">LUFS-I</div>
+      <div class="metric-label">${t('metric.lufs')}</div>
     </div>
     <div class="metric">
       <div class="metric-val" style="color:${pa?.truePeak!=null?tpCol(pa.truePeak):'var(--dim)'}">${pa?.truePeak!=null?fmt(pa.truePeak,1):'—'}<span style="font-size:10px">${pa?.truePeak!=null?' dBTP':''}</span></div>
-      <div class="metric-sub" style="color:${pa?.truePeak!=null?(pa.truePeak<=-1?'var(--green)':'var(--red)'):'var(--dim)'}">${pa?.truePeak!=null?(pa.truePeak<=-1?'✓ OK para streaming':'⚠ supera −1 dBTP'):pa?'calculando…':''}</div>
-      <div class="metric-label">TRUE PEAK</div>
+      <div class="metric-sub" style="color:${pa?.truePeak!=null?(pa.truePeak<=-1?'var(--green)':'var(--red)'):'var(--dim)'}">${pa?.truePeak!=null?(pa.truePeak<=-1?t('metric.tp.ok'):t('metric.tp.warn')):pa?t('metric.tp.calc'):''}</div>
+      <div class="metric-label">${t('metric.tp')}</div>
     </div>
     <div class="metric">
       <div class="metric-val" style="color:${col(a.dr,5,14)}">${fmt(a.dr)}<span style="font-size:11px"> dB</span></div>
       ${pa?`<div class="metric-sub">→ ${fmt(pa.dr)} dB</div>`:''}
-      <div class="metric-label">RANG. DIN.</div>
+      <div class="metric-label">${t('metric.dr')}</div>
     </div>
     <div class="metric">
       <div class="metric-val" style="color:${col(a.correlation,.3,.93)}">${fmt(a.correlation,2)}</div>
       ${pa?`<div class="metric-sub">→ ${fmt(pa.correlation,2)}</div>`:''}
-      <div class="metric-label">CORRELAC.</div>
+      <div class="metric-label">${t('metric.corr')}</div>
     </div>
     <div class="metric">
       <div class="metric-val" style="color:var(--blue)">${fmt(state.origBuf.duration/60,1)}<span style="font-size:11px"> min</span></div>
       <div class="metric-sub">${fmt(state.origBuf.sampleRate/1000)} kHz</div>
-      <div class="metric-label">DURACIÓN</div>
+      <div class="metric-label">${t('metric.dur')}</div>
     </div>
   </div>
   ${issues.length?`<div class="issues">${issues.map(i=>`<div class="issue ${i.t}">${i.t==='warn'?'⚠':'→'} ${i.m}</div>`).join('')}</div>`:''}
@@ -716,32 +722,32 @@ function buildActions(){const{isPlaying,playMode,abSlot,settingsB}=state;
 const loopOn=state.settings.loop?.enabled;
 return`<div class="card">
   <div class="actions">
-    <button class="btn btn-proc ${isPlaying&&playMode==='proc'?'active':''}" id="btnPlayProc">${isPlaying&&playMode==='proc'?'⏸ Masterizado':'▶ Masterizado'}</button>
-    <button class="btn btn-orig ${isPlaying&&playMode==='orig'?'active':''}" id="btnPlayOrig">${isPlaying&&playMode==='orig'?'⏸ Original':'▶ Original'}</button>
+    <button class="btn btn-proc ${isPlaying&&playMode==='proc'?'active':''}" id="btnPlayProc">${isPlaying&&playMode==='proc'?t('btn.mastered.play'):t('btn.mastered.stop')}</button>
+    <button class="btn btn-orig ${isPlaying&&playMode==='orig'?'active':''}" id="btnPlayOrig">${isPlaying&&playMode==='orig'?t('btn.original.play'):t('btn.original.stop')}</button>
     <button class="btn btn-stop" id="btnStop" title="Stop">⏹</button>
-    <button class="btn ${loopOn?'active':''}" id="btnLoop" title="Activar/desactivar loop region" style="color:var(--purple);border-color:${loopOn?'var(--purple)':'var(--dim)'};background:${loopOn?'rgba(204,93,232,.18)':'transparent'}">⟳ Loop</button>
+    <button class="btn ${loopOn?'active':''}" id="btnLoop" title="Activar/desactivar loop region" style="color:var(--purple);border-color:${loopOn?'var(--purple)':'var(--dim)'};background:${loopOn?'rgba(204,93,232,.18)':'transparent'}">${t('btn.loop')}</button>
     <div style="display:flex;align-items:center;gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;flex-shrink:0" title="Comparación A/B">
       <button id="btnAbA" style="padding:9px 14px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='A'?'rgba(105,219,124,.22)':'transparent'};color:${abSlot==='A'?'var(--green)':'var(--muted)'}">A</button>
       <span style="color:var(--dim);font-size:13px;font-weight:300;user-select:none">/</span>
       <button id="btnAbB" style="padding:9px 14px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='B'?'rgba(77,171,247,.22)':'transparent'};color:${abSlot==='B'?'var(--blue)':settingsB?'var(--blue)':'var(--dim)'}">B</button>
     </div>
     <div style="display:flex;gap:0;border:1px solid var(--yellow);border-radius:8px;overflow:hidden;flex-shrink:0">
-      <button class="btn btn-export" id="btnExport" style="border:none;border-radius:0;border-right:1px solid var(--yellow)">⬇ WAV</button>
+      <button class="btn btn-export" id="btnExport" style="border:none;border-radius:0;border-right:1px solid var(--yellow)">${t('btn.export')}</button>
       <select id="bitDepth" title="Profundidad de bits" style="background:#0a0a1a;color:var(--yellow);border:none;font-size:12px;font-weight:bold;padding:0 10px;cursor:pointer;outline:none;letter-spacing:.5px">
         <option value="24" selected>24-bit</option>
         <option value="16">16-bit</option>
       </select>
     </div>
-    <button class="btn btn-secondary" id="btnResetS">↺ Reset</button>
+    <button class="btn btn-secondary" id="btnResetS">${t('btn.reset')}</button>
     <button class="btn-icon-action" id="btnSavePreset" title="Guardar preset">${ICON_SAVE}</button>
     <button class="btn-icon-action" id="btnLoadPreset" title="Cargar preset">${ICON_LOAD}</button>
     <input type="file" id="presetInput" accept=".mpreset,.json,application/json,text/plain,*/*" style="display:none">
   </div>
   <div class="tip">
-    <strong>Tiempo real:</strong> arrastra los nodos de EQ o mueve sliders mientras escuchas.<br>
-    <strong>A/B:</strong> ajusta en A, pulsa B para crear variante (transfiere ajustes o empieza desde el original) y compara. &nbsp;·&nbsp; <strong>?</strong> = ayuda &nbsp;·&nbsp; <strong>↺</strong> = reset módulo
+    ${t('tip.rt')}<br>${t('tip.ab')}
   </div>
 </div>`;}
+
 
 
 /* ══════════════════════════════════════
@@ -791,20 +797,15 @@ function drawSpectrum(){
 
 function getIssues(){
   const{analysis:a,settings:s}=state; if(!a)return[];const r=[];
-  // Nivel general
-  if(a.lufs<-22) r.push({t:'info',m:`Nivel bajo (${a.lufs.toFixed(1)} LUFS) → el master añadirá ganancia hacia -14 LUFS`});
-  if(a.lufs>-6)  r.push({t:'warn',m:`Nivel muy alto (${a.lufs.toFixed(1)} LUFS) → revisa clipping antes de masterizar`});
-  // Rango dinámico — reflejar lo que la app ya corrigió
-  if(a.dr<2)  r.push({t:'warn',m:`DR muy bajo (${a.dr.toFixed(1)} dB) → compresor desactivado automáticamente, saturación mínima`});
-  else if(a.dr<5) r.push({t:'info',m:`DR bajo (${a.dr.toFixed(1)} dB) → compresor suavizado a ratio ${s.comp.ratio.toFixed(1)}:1, saturación reducida`});
-  // Clipping en el original
-  if(a.clipped>10) r.push({t:'warn',m:`Clipping detectado en el original (${a.clipped} muestras) — masterizar no restaura señal recortada`});
-  if(a.truePeak!=null&&a.truePeak>-2) r.push({t:'info',m:`True Peak original alto (${a.truePeak.toFixed(1)} dBTP) → ceiling del limiter ajustado a ${s.lim.ceiling.toFixed(1)} dBFS`});
-  // Estéreo
-  if(a.correlation>.93) r.push({t:'info',m:'Audio casi mono → stereo width ampliará el campo lateral'});
-  if(a.correlation<.25) r.push({t:'warn',m:'Correlación muy baja — posibles problemas de fase. Verifica en mono.'});
-  // HPF auto-subido
-  if(s.hpf.freq>30) r.push({t:'info',m:`Exceso de sub detectado → HPF subido a ${s.hpf.freq} Hz automáticamente`});
+  if(a.lufs<-22) r.push({t:'info',m:t('issue.levelLow',  {lufs:a.lufs.toFixed(1)})});
+  if(a.lufs>-6)  r.push({t:'warn',m:t('issue.levelHigh', {lufs:a.lufs.toFixed(1)})});
+  if(a.dr<2)     r.push({t:'warn',m:t('issue.drLow',     {dr:a.dr.toFixed(1)})});
+  else if(a.dr<5)r.push({t:'info',m:t('issue.drMid',     {dr:a.dr.toFixed(1),ratio:s.comp.ratio.toFixed(1)})});
+  if(a.clipped>10)r.push({t:'warn',m:t('issue.clipping', {count:a.clipped})});
+  if(a.truePeak!=null&&a.truePeak>-2) r.push({t:'info',m:t('issue.tp',{tp:a.truePeak.toFixed(1),ceil:s.lim.ceiling.toFixed(1)})});
+  if(a.correlation>.93) r.push({t:'info',m:t('issue.monoWide')});
+  if(a.correlation<.25) r.push({t:'warn',m:t('issue.phaseWarn')});
+  if(s.hpf.freq>30)     r.push({t:'info',m:t('issue.hpfRaised',{freq:s.hpf.freq})});
   return r;
 }
 
@@ -1138,18 +1139,18 @@ function buildLiveSpectrumCard(){
   const isLive=state.isPlaying&&state.playMode==='proc';
   return`<div class="card">
   <div class="section-title">
-    <span class="section-title-text">ANALIZADOR EN TIEMPO REAL</span>
+    <span class="section-title-text">${t('section.realtime')}</span>
     ${isLive
       ?`<span class="live-badge"><span class="live-dot"></span>LIVE</span>`
-      :`<span style="font-size:11px;color:var(--muted)">▶ Masterizado para ver en vivo</span>`}
+      :`<span style="font-size:11px;color:var(--muted)">${t('section.realtime.hint')}</span>`}
     <button class="section-help-btn" onclick="showHelp('realtime')" title="Cómo usar el analizador" style="margin-left:4px">?</button>
   </div>
   <canvas id="live-spectrum" style="width:100%;height:230px;display:block;border-radius:8px;border:1px solid var(--border);cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none"></canvas>
   <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:7px;font-size:13px;color:#b0b0d8">
-    <span>Espectro <span style="color:#50ee80">━━</span></span>
-    <span>EQ Correctiva <span style="color:#ffa94d">━━</span></span>
-    <span>EQ Tonal <span style="color:#4dabf7">━━</span></span>
-    <span style="color:#8888b8">↕↔ nodos arrastrables</span>
+    <span>${t('live.legend.spectrum')} <span style="color:#50ee80">━━</span></span>
+    <span>${t('live.legend.eqsub')} <span style="color:#ffa94d">━━</span></span>
+    <span>${t('live.legend.eqadd')} <span style="color:#4dabf7">━━</span></span>
+    <span style="color:#8888b8">${t('live.legend.drag')}</span>
   </div>
 </div>`;
 }
@@ -1386,7 +1387,7 @@ function buildWaveformCard(){
     <!-- Columna izquierda: waveform -->
     <div>
       <div class="section-title" style="margin-bottom:8px">
-        <span class="section-title-text">LÍNEA DE TIEMPO</span>
+        <span class="section-title-text">${t('section.timeline')}</span>
         <span style="font-size:11px;color:var(--muted);margin-left:auto">${fmt(dur)} &nbsp;·&nbsp; clic para navegar</span>
         <button class="section-help-btn" onclick="showHelp('timeline')" title="Waveform, loop y output gain" style="margin-left:6px">?</button>
       </div>
@@ -1876,7 +1877,7 @@ function loadPreset(file){
       state.settings=base;
       applyAllLiveUpdates();
       render();
-    }catch(err){alert('Error al cargar preset: '+err.message);}
+    }catch(err){alert(t('err.preset')+err.message);}
   };
   reader.readAsText(file);
 }
@@ -1944,7 +1945,7 @@ async function doLoad(file){
       render();
     }).catch(e=>console.warn('Background analysis:',e));
   }catch(e){
-    alert('No se pudo decodificar el audio. Prueba MP3, WAV o FLAC.');
+    alert(t('err.decode'));
     state.phase='upload';render();
   }
 }
@@ -1974,7 +1975,7 @@ async function doExport(){
   if(!state.origBuf)return;
   const prevPos=getCurrentPos(),prevMode=state.playMode,prevPlaying=state.isPlaying;
   const btn=document.getElementById('btnExport');
-  if(btn){btn.textContent='⏳ Exportando…';btn.disabled=true;}
+  if(btn){btn.textContent=t('btn.export.working');btn.disabled=true;}
   try{
     const bd=parseInt(document.getElementById('bitDepth')?.value||'24');
     const out=await processAudio(state.origBuf,state.settings);
@@ -1988,7 +1989,7 @@ async function doExport(){
     const fd=await analyzeSpectrum(out);
     const bands=FREQ_BANDS.map(b=>{const val=getBandPower(fd,b.min,b.max,8192,out.sampleRate);return{...b,value:val,diff:val-b.target};});
     state.procAnalysis={bands,lufs:calcLUFS(out),dr:calcDR(out),correlation:calcCorr(out),truePeak:calcTruePeak(out)};
-  }catch(e){alert('Error al exportar: '+e.message);}
+  }catch(e){alert(t('err.export')+e.message);}
   if(prevPlaying){
     if(prevMode==='proc'){buildLiveChain(state.origBuf,state.settings,prevPos);state.isPlaying=true;state.playMode='proc';}
     else if(prevMode==='orig')doPlayOriginal();

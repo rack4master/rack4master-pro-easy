@@ -156,3 +156,39 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   body{padding:14px 10px 36px}
   .mod-summary{display:none}
 }
+
+/* ── HAMBURGER ─────────────────────────────────────────────────── */
+.header{position:relative}
+.hamburger-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--dim);color:var(--muted);font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.hamburger-btn:hover{color:var(--blue);border-color:var(--blue);background:rgba(77,171,247,.08)}
+.hamburger-menu{position:absolute;top:calc(100% + 8px);right:0;background:#0e0e1e;border:1px solid var(--border);border-radius:12px;padding:10px;min-width:160px;z-index:500;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.hamburger-menu.open{display:block}
+.hmenu-item{display:block;color:var(--text);text-decoration:none;font-size:14px;padding:8px 12px;border-radius:6px;transition:background .15s}
+.hmenu-item:hover{background:rgba(77,171,247,.1);color:var(--blue)}
+.hmenu-sep{border:none;border-top:1px solid var(--border);margin:8px 0}
+.hmenu-lang-label{font-size:11px;font-weight:bold;letter-spacing:1.5px;color:var(--muted);padding:0 12px 6px;text-transform:uppercase}
+.hmenu-langs{display:flex;gap:4px;padding:0 8px 4px}
+.lang-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--dim);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:bold;letter-spacing:.5px;transition:all .15s}
+.lang-btn:hover{border-color:var(--blue);color:var(--blue)}
+.lang-btn.active{background:rgba(77,171,247,.18);border-color:var(--blue);color:var(--blue)}
+
+/* ── FOOTER ────────────────────────────────────────────────────── */
+.app-footer{max-width:960px;margin:28px auto 0;padding:16px 16px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+.foot-copy{color:var(--muted)}
+.foot-local{color:#5858a0}
+.foot-sep{color:var(--dim)}
+.foot-link{color:var(--muted);text-decoration:none;transition:color .15s}
+.foot-link:hover{color:var(--blue)}
+
+/* ── FOOTER MODAL ──────────────────────────────────────────────── */
+.footer-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.footer-modal-overlay.open{display:flex}
+.footer-modal{background:#0e0e1e;border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;position:relative}
+.footer-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#0e0e1e;z-index:1}
+.footer-modal-title{font-size:17px;font-weight:bold;color:var(--blue);margin:0}
+.footer-modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1;padding:0;transition:color .15s}
+.footer-modal-close:hover{color:var(--text)}
+.footer-modal-body{padding:20px 22px 26px;font-size:14px;color:#ccd0f0;line-height:1.9}
+.footer-modal-body p{margin-bottom:12px}
+.footer-modal-body p:last-child{margin-bottom:0}
+.footer-modal-body ol{color:#ccd0f0}
