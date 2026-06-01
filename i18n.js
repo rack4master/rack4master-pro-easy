@@ -89,7 +89,7 @@ const TRANSLATIONS = {
     'menu.lang': 'Idioma',
 
     // Footer
-    'footer.copy':    '© 2026 Rack4Master. Francesc Llorens.',
+    'footer.copy':    '© 2026 Rack4Master. Francesc Llorens',
     'footer.local':   'Sin datos almacenados ni rastreados.',
     'footer.privacy': 'Privacidad',
     'footer.legal':   'Aviso legal',
@@ -192,7 +192,7 @@ const TRANSLATIONS = {
     'menu.help': '📖 Help',
     'menu.lang': 'Language',
 
-    'footer.copy':    '© 2026 Rack4Master. Francesc Llorens.',
+    'footer.copy':    '© 2026 Rack4Master. Francesc Llorens',
     'footer.local':   'Runs locally. No data stored or tracked.',
     'footer.privacy': 'Privacy',
     'footer.legal':   'Legal',
@@ -294,7 +294,7 @@ const TRANSLATIONS = {
     'menu.help': '📖 Ajuda',
     'menu.lang': 'Idioma',
 
-    'footer.copy':    '© 2026 Rack4Master. Francesc Llorens.',
+    'footer.copy':    '© 2026 Rack4Master. Francesc Llorens',
     'footer.local':   "Sense dades emmagatzemades ni rastreig.",
     'footer.privacy': 'Privadesa',
     'footer.legal':   'Avís legal',

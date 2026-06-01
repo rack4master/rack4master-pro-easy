@@ -173,7 +173,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .lang-btn.active{background:rgba(77,171,247,.18);border-color:var(--blue);color:var(--blue)}
 
 /* ── FOOTER ────────────────────────────────────────────────────── */
-.app-footer{max-width:960px;margin:28px auto 0;padding:16px 16px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+.app-footer{max-width:960px;margin:28px auto 0;padding:16px 16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 10px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
 .foot-copy{color:var(--muted)}
 .foot-local{color:#5858a0}
 .foot-sep{color:var(--dim)}
