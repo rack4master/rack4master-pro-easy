@@ -1,69 +1,69 @@
 # Rack4Master Pro Easy — AI Mastering Engine
 
-## ✨ Características principales
+## ✨ Key Features
 
-- **Cadena profesional fija** (HPF → EQ Correctiva → Saturación → Bus Comp → EQ Tonal → Stereo Width → Limiter → Output Gain).
-- **Auto‑análisis inteligente** — promedia 15 snapshots FFT distribuidos por los primeros 40 segundos del track, compara el balance espectral relativo con la forma típica del pop‑rock comercial y calcula ajustes iniciales para cada módulo.
-- **Auto‑correcciones automáticas** — el análisis no solo detecta problemas, los corrige: ajusta el HPF según el contenido sub, suaviza o desactiva el compresor si el DR ya es muy bajo, fija el Ceiling del limitador según el True Peak del original, y reduce la saturación si la mezcla ya está muy limitada.
-- **EQ Correctiva de 4 bandas** — filtros peak arrastrables centrados en 200 / 300 / 500 / 1000 Hz con Q y ganancia ajustables. Diseñada para cortes quirúrgicos en la zona de mud (200–1000 Hz) antes del compresor.
-- **EQ Tonal de 7 bandas** — cubre el mismo espectro que el análisis inicial: Sub shelf (40 Hz), Low shelf (120 Hz), Lo‑Mid peak (350 Hz, arrastrable), Mid peak (1 kHz, arrastrable), Hi‑Mid peak (3 kHz, arrastrable), High shelf (8 kHz), Air shelf (16 kHz).
-- **Métricas de calidad** — LUFS‑I (ITU‑R BS.1770‑4), True Peak con interpolación cúbica 4× calculado sobre original y master, Rango Dinámico, Correlación estéreo.
-- **Control en tiempo real** — todos los sliders y conmutadores actúan al instante mientras escuchas.
-- **Comparación A/B de variantes** — dos slots de ajustes (A y B) para crear y comparar dos versiones distintas del master. Cambio de slot sin perder posición de reproducción.
-- **Loop arrastrable** — define una región de bucle en la waveform y repite la sección indefinidamente, en modo original o masterizado.
-- **Analizador en tiempo real** — espectro FFT superpuesto con las curvas de EQ Correctiva y EQ Tonal. **Arrastra los nodos EQ directamente sobre el gráfico** para modificar frecuencia y ganancia al instante.
-- **Output Gain post‑limitador** — trim de salida que se bake en el WAV exportado sin afectar al comportamiento del limitador.
-- **VU Meter estéreo** — barras RMS con peak hold de 2 segundos.
-- **Presets** — guarda y carga tu configuración completa (archivo `.mpreset`).
-- **Exportación WAV** — elige 24‑bit (profesional) o 16‑bit (distribución directa) con dithering TPDF para ambos.
+- **Fixed professional chain** (HPF → Corrective EQ → Saturation → Bus Comp → Tonal EQ → Stereo Width → Limiter → Output Gain).
+- **Intelligent auto‑analysis** — averages 15 FFT snapshots distributed across the first 40 seconds of the track, compares the relative spectral balance with the typical commercial pop‑rock curve, and calculates initial adjustments for each module.
+- **Automatic corrections** — the analysis not only detects problems but fixes them: adjusts the HPF based on sub content, smooths or disables the compressor if the DR is already too low, sets the Limiter’s ceiling according to the original True Peak, and reduces saturation if the mix is already heavily limited.
+- **4‑band Corrective EQ** — draggable peak filters centered at 200 / 300 / 500 / 1000 Hz with adjustable Q and gain. Designed for surgical cuts in the mud range (200–1000 Hz) before the compressor.
+- **7‑band Tonal EQ** — covers the same spectrum as the initial analysis: Sub shelf (40 Hz), Low shelf (120 Hz), Lo‑Mid peak (350 Hz, draggable), Mid peak (1 kHz, draggable), Hi‑Mid peak (3 kHz, draggable), High shelf (8 kHz), Air shelf (16 kHz).
+- **Quality metrics** — LUFS‑I (ITU‑R BS.1770‑4), True Peak with 4× cubic interpolation calculated on original and master, Dynamic Range, Stereo Correlation.
+- **Real‑time control** — all sliders and switches act instantly while you listen.
+- **A/B variant comparison** — two preset slots (A and B) to create and compare two different master versions. Switch slots without losing playback position.
+- **Draggable loop** — define a loop region on the waveform and repeat the section indefinitely, in either original or mastered mode.
+- **Real‑time analyzer** — FFT spectrum overlaid with the Corrective EQ and Tonal EQ curves. **Drag EQ nodes directly on the graph** to modify frequency and gain instantly.
+- **Post‑limiter Output Gain** — output trim that is baked into the exported WAV without affecting the limiter's behavior.
+- **Stereo VU Meter** — RMS bars with a 2‑second peak hold.
+- **Presets** — save and load your full configuration (`.mpreset` file).
+- **WAV export** — choose 24‑bit (professional) or 16‑bit (direct distribution) with TPDF dithering for both.
 
-## 🖥️ Capturas de pantalla
+## 🖥️ Screenshots
 
-| Análisis espectral | Cadena de masterización |
+| Spectral analysis | Mastering chain |
 |--------------------|--------------------------|
-| ![Espectro](pic1.png) | ![Cadena](pic2.png) |
+| ![Spectrum](pic1.png) | ![Chain](pic2.png) |
 
-## 🚀 Uso rápido
+## 🚀 Quick Start
 
-1. Arrastra un archivo de audio (MP3, WAV, FLAC, AAC, OGG, M4A) o haz clic para cargarlo.
-2. Espera el análisis automático (10–30 segundos según duración). El auto‑análisis calcula ajustes y aplica correcciones preventivas.
-3. Pulsa **▶ Masterizado** para escuchar el resultado con los ajustes calculados.
-4. Ajusta los sliders o arrastra los nodos EQ en el analizador en tiempo real.
-5. Usa **⟳ Loop** para aislar una sección, **A / B** para comparar dos variantes del master, y **▶ Original** para evaluar el punto de partida.
-6. Guarda el preset (💾) y exporta el master (⬇ WAV).
+1. Drag an audio file (MP3, WAV, FLAC, AAC, OGG, M4A) or click to load it.
+2. Wait for the automatic analysis (10–30 seconds depending on length). The auto‑analysis calculates adjustments and applies preventive corrections.
+3. Press **▶ Mastered** to listen to the result with the calculated settings.
+4. Adjust the sliders or drag the EQ nodes on the real‑time analyzer.
+5. Use **⟳ Loop** to isolate a section, **A / B** to compare two master variants, and **▶ Original** to evaluate the starting point.
+6. Save the preset (💾) and export the master (⬇ WAV).
 
-## 🎛️ La cadena de procesado
+## 🎛️ The Processing Chain
 
 ```
 IN → HPF → EQ Correctiva (4 bandas) → Saturación → Bus Comp → EQ Tonal (7 bandas) → Stereo Width → Limiter → Out Gain → OUT
 ```
 
-| Módulo | Tipo | Función |
+| Module | Type | Function |
 |--------|------|---------|
-| HPF | High‑pass 12 dB/oct | Elimina subsónico (auto: 22–55 Hz según contenido sub) |
-| EQ Correctiva | 4× peaking Q‑adjustable | Cortes quirúrgicos de mud en 200 / 300 / 500 / 1000 Hz |
-| Saturación | Waveshaper tanh | Calidez analógica, densidad espectral (auto-desactivada si DR < 5 dB) |
-| Bus Comp | DynamicsCompressor | Glue estéreo (auto-bypass si DR < 3 dB; ratio mínimo 1.3:1 si DR < 5 dB) |
-| EQ Tonal | 2 shelves + 3 peaks + 2 shelves | Moldeo espectral de carácter (7 bandas = 7 zonas del análisis) |
-| Stereo Width | Matriz M/S | Control de amplitud estéreo |
-| Limiter | Ratio 20:1, ataque 1 ms | Ceiling auto‑ajustado según True Peak del original |
-| Output Gain | Ganancia lineal | Trim final post‑limitador |
+| HPF | High‑pass 12 dB/oct | Remove subsonic content (auto: 22–55 Hz based on sub content) |
+| Corrective EQ | 4× peaking Q‑adjustable | Surgical mud cuts at 200 / 300 / 500 / 1000 Hz |
+| Saturation | Tanh waveshaper | Analog warmth, spectral density (auto‑disabled if DR < 5 dB) |
+| Bus Comp | DynamicsCompressor | Stereo glue (auto‑bypass if DR < 3 dB; min ratio 1.3:1 if DR < 5 dB) |
+| Tonal EQ | 2 shelves + 3 peaks + 2 shelves | Character spectral shaping (7 bands = 7 analysis zones) |
+| Stereo Width | M/S matrix | Stereo width control |
+| Limiter | Ratio 20:1, attack 1 ms | Auto‑adjusted ceiling based on original True Peak |
+| Output Gain | Linear gain | Final post‑limiter trim |
 
-## 🗺️ Mapa de frecuencias
+## 🗺️ Frequency Map
 
-| Zona | Rango | Módulo | Default |
+| Zone | Range | Module | Default |
 |------|-------|--------|---------|
-| Sub | 20–80 Hz | HPF + EQ Tonal Sub | Shelf 40 Hz |
-| Low | 80–250 Hz | EQ Correctiva + EQ Tonal Low | Shelf 120 Hz / Peak 200 Hz |
-| Lo‑Mid (mud) | 250–500 Hz | EQ Correctiva + EQ Tonal Lo‑Mid | Peak 300 Hz / Peak 350 Hz |
-| Mid | 500–2000 Hz | EQ Correctiva + EQ Tonal Mid | Peak 1 kHz |
-| Hi‑Mid | 2–8 kHz | EQ Tonal Hi‑Mid | Peak 3 kHz |
-| High | 8–16 kHz | EQ Tonal High | Shelf 8 kHz |
-| Air | 16–22 kHz | EQ Tonal Air | Shelf 16 kHz |
+| Sub | 20–80 Hz | HPF + Tonal EQ Sub | Shelf 40 Hz |
+| Low | 80–250 Hz | Corrective EQ + Tonal EQ Low | Shelf 120 Hz / Peak 200 Hz |
+| Lo‑Mid (mud) | 250–500 Hz | Corrective EQ + Tonal EQ Lo‑Mid | Peak 300 Hz / Peak 350 Hz |
+| Mid | 500–2000 Hz | Corrective EQ + Tonal EQ Mid | Peak 1 kHz |
+| Hi‑Mid | 2–8 kHz | Tonal EQ Hi‑Mid | Peak 3 kHz |
+| High | 8–16 kHz | Tonal EQ High | Shelf 8 kHz |
+| Air | 16–22 kHz | Tonal EQ Air | Shelf 16 kHz |
 
-## 🛠️ Tecnologías
+## 🛠️ Technologies
 
-- **Web Audio API** — procesado en tiempo real y renderizado offline sin servidores.
-- **OfflineAudioContext con múltiples suspensions** — análisis FFT promediado (15 snapshots) y exportación de alta calidad.
-- **Canvas API** — espectro, waveform, curvas EQ, VU meter (todas a 60 fps).
-- **JavaScript puro (ES2020)** — sin frameworks ni dependencias externas.
+- **Web Audio API** — real‑time processing and offline rendering, no servers required.
+- **OfflineAudioContext with multiple suspensions** — averaged FFT analysis (15 snapshots) and high‑quality export.
+- **Canvas API** — spectrum, waveform, EQ curves, VU meter (all at 60 fps).
+- **Pure JavaScript (ES2020)** — no frameworks or external dependencies.
