@@ -10,7 +10,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed','Inte
 .app{max-width:960px;margin:0 auto}
 
 /* Header */
-.header{text-align:center;margin-bottom:28px}
+.header{text-align:left;margin-bottom:28px;padding-right:48px;position:relative}
 .header-eye{
   font-family:'Share Tech Mono',monospace;
   font-size:.72rem;letter-spacing:.22em;color:#b2b6d2;margin-bottom:10px;
@@ -20,7 +20,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed','Inte
   font-size:1.72rem;font-weight:900;letter-spacing:.06em;
   color:var(--amber);
   text-shadow:0 0 28px rgba(255,170,0,.35);
-  margin-bottom:8px;line-height:1.1;
+  margin-bottom:6px;line-height:1.1;
 }
 .title-badge{
   font-family:'Orbitron',monospace;
@@ -30,7 +30,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed','Inte
 }
 .header-sub{
   font-family:'Share Tech Mono',monospace;
-  font-size:.74rem;letter-spacing:.10em;color:#b2b6d2;
+  font-size:.74rem;letter-spacing:.18em;color:#b2b6d2;
 }
 
 /* Cards */
@@ -178,7 +178,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 
 /* ── HAMBURGER ─────────────────────────────────────────────────── */
 .header{position:relative}
-.hamburger-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--dim);color:var(--muted);font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.hamburger-btn{position:absolute;right:0;top:4px;transform:none;background:transparent;border:1px solid var(--dim);color:var(--muted);font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
 .hamburger-btn:hover{color:var(--amber);border-color:var(--amber);background:rgba(255,170,0,.08)}
 .hamburger-menu{position:absolute;top:calc(100% + 8px);right:0;background:#0e0e1e;border:1px solid var(--border);border-top:2px solid var(--amber);border-radius:12px;padding:10px;min-width:170px;z-index:500;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .hamburger-menu.open{display:block}
