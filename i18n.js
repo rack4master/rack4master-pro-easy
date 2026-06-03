@@ -329,7 +329,7 @@ const TRANSLATIONS = {
 
 /* ── Core i18n functions ─────────────────────────────────────── */
 
-let _lang = localStorage.getItem('r4m_lang') || 'es';
+let _lang = 'en';  // always starts in English — no persistence
 
 function t(key, params){
   let str = TRANSLATIONS[_lang]?.[key] ?? TRANSLATIONS['es']?.[key] ?? key;
@@ -340,7 +340,6 @@ function t(key, params){
 function setLang(lang){
   if(!TRANSLATIONS[lang]) return;
   _lang = lang;
-  localStorage.setItem('r4m_lang', lang);
   document.documentElement.lang = lang;
   applyI18n();
   if(typeof render === 'function') render();
