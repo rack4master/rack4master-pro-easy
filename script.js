@@ -23,13 +23,13 @@ const FREQ_BANDS = [
 ];
 
 const MODULES_META = [
-  {id:'hpf',   name:'HPF',        color:'#ff6b6b', desc:'Elimina subsónico (<20 Hz)'},
-  {id:'eqSub', name:'EQ CORRECTIVA',    color:'#ffa94d', desc:'EQ Sustractiva — resonancias'},
-  {id:'sat',   name:'SATURACIÓN', color:'#ffd43b', desc:'Tape warmth — armónicos cálidos'},
-  {id:'comp',  name:'COMPRESOR (GLUE)',   color:'#69db7c', desc:'Glue compressor — ratio 2:1'},
-  {id:'eqAdd', name:'EQ TONAL',   color:'#4dabf7', desc:'EQ Aditiva — color y brillo'},
-  {id:'width', name:'STEREO',     color:'#cc5de8', desc:'Imagen M/S — amplitud estéreo'},
-  {id:'lim',   name:'LIMITER',    color:'#f783ac', desc:'Brick wall — techo -1.0 dBFS'},
+  {id:'hpf',   name:'HPF',        color:'#ff6b6b'},
+  {id:'eqSub', name:'EQ—',        color:'#ffa94d'},
+  {id:'sat',   name:'SAT',        color:'#ffd43b'},
+  {id:'comp',  name:'COMP',       color:'#69db7c'},
+  {id:'eqAdd', name:'EQ+',        color:'#4dabf7'},
+  {id:'width', name:'WIDTH',      color:'#cc5de8'},
+  {id:'lim',   name:'LIM',        color:'#f783ac'},
 ];
 
 const ICON_SAVE = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
@@ -579,7 +579,7 @@ function buildFileBar(){
     ?`<span class="live-badge"><span class="live-dot"></span>${t('filebar.live')}</span>`
     :state.isPlaying&&state.playMode==='orig'
     ?`<span class="orig-badge">▶ ${t('filebar.orig')}</span>`:'';
-  return`<div class="file-bar"><span class="file-name">✓ ${esc(state.fileName)}</span><div style="display:flex;align-items:center;gap:10px">${badge}<button class="file-close" id="btnReset" title="Cargar otro">✕</button></div></div>`;
+  return`<div class="file-bar"><span class="file-name">✓ ${esc(state.fileName)}</span><div style="display:flex;align-items:center;gap:10px">${badge}<button class="file-close" id="btnReset" title="${t('tt.fileReset')}">✕</button></div></div>`;
 }
 
 function buildAnalysisCard(){const{analysis:a,procAnalysis:pa}=state;if(!a)return'';
@@ -591,7 +591,7 @@ function buildAnalysisCard(){const{analysis:a,procAnalysis:pa}=state;if(!a)retur
 return`<div class="card">
   <div class="section-title">
     <span class="section-title-text">${pa?t('section.analysis.after'):t('section.analysis.before')}</span>
-    <button class="section-help-btn" onclick="showHelp('spectrum')" title="¿Cómo leer este gráfico?">?</button>
+    <button class="section-help-btn" onclick="showHelp('spectrum')" title="${t('tt.specHelp')}">?</button>
   </div>
   <canvas id="spectrum"></canvas>
   <div class="spec-legend">${pa?t('spectrum.legend.ab'):''}${t('spectrum.legend')}</div>
@@ -633,27 +633,27 @@ function buildChainViz(){
   ${nodes.map(n=>{
     const on=state.settings[n.id].enabled;
     const open=state.openMods.has(n.id);
-    return`<button class="chain-node ${on?'on':''}" data-modid="${n.id}" title="${open?'Cerrar':'Abrir'} ${n.label}" style="cursor:pointer;background:${open?`rgba(${hexToRgb(n.color)},.15)`:'transparent'};color:${on?n.color:'#505070'};border-color:${on?(open?n.color:'#606080'):'#404060'};transform:${open?'scale(1.08)':'none'}">${n.label}</button>
+    return`<button class="chain-node ${on?'on':''}" data-modid="${n.id}" title="${open?t('tt.chainClose'):t('tt.chainOpen')} ${n.label}" style="cursor:pointer;background:${open?`rgba(${hexToRgb(n.color)},.15)`:'transparent'};color:${on?n.color:'#505070'};border-color:${on?(open?n.color:'#606080'):'#404060'};transform:${open?'scale(1.08)':'none'}">${n.label}</button>
     <span class="chain-arrow">→</span>`;
   }).join('')}
   <span class="chain-label">OUT</span>
-  <button class="section-help-btn" onclick="showHelp('chain')" title="¿Qué es la cadena?" style="position:absolute;right:4px;top:50%;transform:translateY(-50%)">?</button>
+  <button class="section-help-btn" onclick="showHelp('chain')" title="${t('tt.chainHelp')}" style="position:absolute;right:4px;top:50%;transform:translateY(-50%)">?</button>
 </div>`;}
 function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`${r},${g},${b}`;}
 
-function buildModule(meta){const{id,name,color,desc}=meta,s=state.settings[id],open=state.openMods.has(id);
+function buildModule(meta){const{id,name,color}=meta,s=state.settings[id],open=state.openMods.has(id);
 return`<div class="module ${s.enabled?'on':''}" style="--mc:${color}">
   <div class="mod-header" data-mid="${id}">
     <div class="mod-dot"></div>
     <div class="mod-name" style="color:${s.enabled?color:'#606080'}">${name}</div>
     <div class="mod-summary">${modSummary(id)}</div>
-    <button class="mod-icon-btn mod-help-btn" title="Ayuda" onclick="event.stopPropagation();showHelp('${id}')">?</button>
-    <button class="mod-icon-btn mod-reset-btn" data-resetmod="${id}" title="Reset al valor calculado" onclick="event.stopPropagation()">↺</button>
+    <button class="mod-icon-btn mod-help-btn" title="${t('tt.modHelp')}" onclick="event.stopPropagation();showHelp('${id}')">?</button>
+    <button class="mod-icon-btn mod-reset-btn" data-resetmod="${id}" title="${t('tt.modReset')}" onclick="event.stopPropagation()">↺</button>
     <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${s.enabled?'checked':''} data-toggle="${id}"><span class="toggle-track"></span></label>
     <div class="mod-arrow ${open?'open':''}">▼</div>
   </div>
   <div class="mod-body ${open?'open':''}">
-    <div class="mod-desc">${desc}</div>
+    <div class="mod-desc">${t('mod.'+id+'.desc')}</div>
     ${buildModBody(id)}
   </div>
 </div>`;}
@@ -664,29 +664,29 @@ function buildModBody(id){
   const s=state.settings[id];
   switch(id){
     case'hpf':
-      return sl('hpf.freq','Frecuencia de corte',s.freq,15,80,1,'Hz');
+      return sl('hpf.freq',t('label.hpf.freq'),s.freq,15,80,1,'Hz');
     case'eqSub':
       return `
         <div class="eq-wrap">
           <canvas id="eq-canvas-eqSub" class="eq-canvas"></canvas>
           <div id="eq-readout-eqSub" class="eq-readout">
-            <span style="color:var(--dim);font-size:11px">Haz clic en un nodo para seleccionarlo</span>
+            <span style="color:var(--dim);font-size:11px">'+t('label.eq.click')+'</span>
           </div>
-          <div class="eq-hint">↕ arrastrar = ganancia &nbsp;·&nbsp; ↔ arrastrar = frecuencia &nbsp;·&nbsp; 🖱 rueda = Q</div>
+          <div class="eq-hint">${t('label.eq.drag.full')}</div>
         </div>
         <div class="eq-q-section">
-          <div class="eq-q-title">Q POR BANDA (anchura del filtro)</div>
+          <div class="eq-q-title">'+t('label.eq.qTitle')+'</div>
           ${s.bands.map((b,i)=>`
             <div class="slider-row">
               <div class="slider-top">
-                <span class="slider-label" style="color:var(--orange)">Banda ${i+1}</span>
+                <span class="slider-label" style="color:var(--orange)">'+t('label.eq.band')+' ${i+1}</span>
                 <span class="slider-val" id="eq-qval-${i}">${b.q.toFixed(1)}</span>
               </div>
               <input type="range" id="eq-q-${i}" min=".5" max="10" step=".1" value="${b.q}" data-band="${i}" class="eq-q-slider">
             </div>`).join('')}
         </div>`;
     case'sat':
-      return `${sl('sat.amount','Calidez (tape warmth)',s.amount,0,.8,.01,'')}<div style="font-size:12px;color:var(--muted);margin-top:5px">0 = digital limpio · 0.8 = saturación intensa</div>`;
+      return `${sl('sat.amount',t('label.sat.amount'),s.amount,0,.8,.01,'')}<div style="font-size:12px;color:var(--muted);margin-top:5px">'+t('label.sat.hint')+'</div>`;
     case'comp':
       return `${sl('comp.threshold','Threshold',s.threshold,-40,0,1,'dB')}${sl('comp.ratio','Ratio',s.ratio,1.5,8,.5,':1')}${sl('comp.attack','Attack',s.attack,5,300,5,'ms')}${sl('comp.release','Release',s.release,50,600,10,'ms')}${sl('comp.makeup','Makeup Gain',s.makeup,0,12,.5,'dB')}`;
     case'eqAdd':
@@ -694,9 +694,9 @@ function buildModBody(id){
         <div class="eq-wrap">
           <canvas id="eq-canvas-eqAdd" class="eq-canvas"></canvas>
           <div id="eq-readout-eqAdd" class="eq-readout">
-            <span style="color:var(--dim);font-size:11px">Haz clic en un nodo para seleccionarlo</span>
+            <span style="color:var(--dim);font-size:11px">'+t('label.eq.click')+'</span>
           </div>
-          <div class="eq-hint">↕ arrastrar = ganancia &nbsp;·&nbsp; ↔ arrastrar = frecuencia (Lo-Mid / Mid / Hi-Mid) &nbsp;·&nbsp; shelves Sub/Low/High/Air = solo ganancia</div>
+          <div class="eq-hint">${t('label.eq.drag.add')}</div>
         </div>`;
     case'width':
       return `${sl('width.amount','Amplitud M/S',s.amount,.5,2,.05,'')}<div style="font-size:12px;color:var(--muted);margin-top:5px">1.0 = original · &lt;1.0 mono · &gt;1.0 más ancho</div>`;
@@ -717,22 +717,22 @@ return`<div class="card">
     <button class="btn btn-proc ${isPlaying&&playMode==='proc'?'active':''}" id="btnPlayProc">${isPlaying&&playMode==='proc'?t('btn.mastered.play'):t('btn.mastered.stop')}</button>
     <button class="btn btn-orig ${isPlaying&&playMode==='orig'?'active':''}" id="btnPlayOrig">${isPlaying&&playMode==='orig'?t('btn.original.play'):t('btn.original.stop')}</button>
     <button class="btn btn-stop" id="btnStop" title="Stop">⏹</button>
-    <button class="btn ${loopOn?'active':''}" id="btnLoop" title="Activar/desactivar loop region" style="color:var(--purple);border-color:${loopOn?'var(--purple)':'var(--dim)'};background:${loopOn?'rgba(204,93,232,.18)':'transparent'}">${t('btn.loop')}</button>
-    <div style="display:flex;align-items:center;gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;flex-shrink:0" title="Comparación A/B">
+    <button class="btn ${loopOn?'active':''}" id="btnLoop" title="${t('btn.loop')}" style="color:var(--purple);border-color:${loopOn?'var(--purple)':'var(--dim)'};background:${loopOn?'rgba(204,93,232,.18)':'transparent'}">${t('btn.loop')}</button>
+    <div style="display:flex;align-items:center;gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;flex-shrink:0" title="${t('tt.abCompare')}">
       <button id="btnAbA" style="padding:9px 14px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='A'?'rgba(105,219,124,.22)':'transparent'};color:${abSlot==='A'?'var(--green)':'var(--muted)'}">A</button>
       <span style="color:var(--dim);font-size:13px;font-weight:300;user-select:none">/</span>
       <button id="btnAbB" style="padding:9px 14px;font-weight:900;font-size:14px;letter-spacing:1px;border:none;cursor:pointer;background:${abSlot==='B'?'rgba(77,171,247,.22)':'transparent'};color:${abSlot==='B'?'var(--blue)':settingsB?'var(--blue)':'var(--dim)'}">B</button>
     </div>
     <div style="display:flex;gap:0;border:1px solid var(--yellow);border-radius:8px;overflow:hidden;flex-shrink:0">
       <button class="btn btn-export" id="btnExport" style="border:none;border-radius:0;border-right:1px solid var(--yellow)">${t('btn.export')}</button>
-      <select id="bitDepth" title="Profundidad de bits" style="background:#0a0a1a;color:var(--yellow);border:none;font-size:12px;font-weight:bold;padding:0 10px;cursor:pointer;outline:none;letter-spacing:.5px">
+      <select id="bitDepth" title="${t('tt.bitDepth')}" style="background:#0a0a1a;color:var(--yellow);border:none;font-size:12px;font-weight:bold;padding:0 10px;cursor:pointer;outline:none;letter-spacing:.5px">
         <option value="24" selected>24-bit</option>
         <option value="16">16-bit</option>
       </select>
     </div>
     <button class="btn btn-secondary" id="btnResetS">${t('btn.reset')}</button>
-    <button class="btn-icon-action" id="btnSavePreset" title="Guardar preset">${ICON_SAVE}</button>
-    <button class="btn-icon-action" id="btnLoadPreset" title="Cargar preset">${ICON_LOAD}</button>
+    <button class="btn-icon-action" id="btnSavePreset" title="${t('tt.savePreset')}">${ICON_SAVE}</button>
+    <button class="btn-icon-action" id="btnLoadPreset" title="${t('tt.loadPreset')}">${ICON_LOAD}</button>
     <input type="file" id="presetInput" accept=".mpreset,.json,application/json,text/plain,*/*" style="display:none">
   </div>
   <div class="tip">
@@ -971,7 +971,7 @@ function updateEQReadout(moduleId){
   const el=document.getElementById('eq-readout-'+moduleId); if(!el)return;
   const sel=state.selectedEQBand;
   if(!sel||sel.moduleId!==moduleId){
-    el.innerHTML='<span style="color:var(--dim);font-size:11px">Haz clic en un nodo para seleccionarlo</span>';
+    el.innerHTML='<span style="color:var(--dim);font-size:11px">'+t('label.eq.click')+'</span>';
     return;
   }
   const{bands,hasQ}=getEQBands(moduleId);
@@ -1135,7 +1135,7 @@ function buildLiveSpectrumCard(){
     ${isLive
       ?`<span class="live-badge"><span class="live-dot"></span>LIVE</span>`
       :`<span style="font-size:11px;color:var(--muted)">${t('section.realtime.hint')}</span>`}
-    <button class="section-help-btn" onclick="showHelp('realtime')" title="Cómo usar el analizador" style="margin-left:4px">?</button>
+    <button class="section-help-btn" onclick="showHelp('realtime')" title="${t('tt.realtimeHelp')}" style="margin-left:4px">?</button>
   </div>
   <canvas id="live-spectrum" style="width:100%;height:230px;display:block;border-radius:8px;border:1px solid var(--border);cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none"></canvas>
   <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:7px;font-size:13px;color:#b0b0d8">
@@ -1381,7 +1381,7 @@ function buildWaveformCard(){
       <div class="section-title" style="margin-bottom:8px">
         <span class="section-title-text">${t('section.timeline')}</span>
         <span style="font-size:11px;color:var(--muted);margin-left:auto">${fmt(dur)} &nbsp;·&nbsp; clic para navegar</span>
-        <button class="section-help-btn" onclick="showHelp('timeline')" title="Waveform, loop y output gain" style="margin-left:6px">?</button>
+        <button class="section-help-btn" onclick="showHelp('timeline')" title="${t('tt.timelineHelp')}" style="margin-left:6px">?</button>
       </div>
       <canvas id="waveform-canvas" style="width:100%;height:72px;display:block;border-radius:8px;border:1px solid var(--border);cursor:pointer;touch-action:none"></canvas>
     </div>
@@ -1717,7 +1717,7 @@ function bindEvents(){
   if(fi)fi.onchange=e=>doLoad(e.target.files[0]);
 
   document.getElementById('btnReset')?.addEventListener('click',()=>{
-    if(!confirm('¿Seguro que quieres cerrar esta sesión?\nSe perderán todos los ajustes actuales.'))return;
+    if(!confirm(t('confirm.reset')))return;
     stopAll();
     // Cerrar AudioContext para liberar recursos del sistema
     if(state.audioCtx){state.audioCtx.close().catch(()=>{});state.audioCtx=null;}
@@ -1765,7 +1765,7 @@ function bindEvents(){
     state.settingsA=deepClone(state.settings);   // guardar A actual
     if(!state.settingsB){
       // Primera vez: preguntar cómo inicializar B
-      const choice=confirm('¿Cómo quieres inicializar el slot B?\n\n[Aceptar] → Copiar los ajustes actuales de A\n[Cancelar] → Empezar desde los ajustes originales del análisis');
+      const choice=confirm(t('confirm.abSlotB'));
       state.settingsB=deepClone(choice?state.settings:state.initialSettings);
     }
     state.abSlot='B';
@@ -1950,7 +1950,7 @@ async function doLoad(file){
         }
       }
       render();
-    }).catch(e=>console.warn('Background analysis:',e));
+    }).catch(()=>{});
   }catch(e){
     alert(t('err.decode'));
     state.phase='upload';render();
